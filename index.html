@@ -23,6 +23,7 @@
 </head>
 <body>
 <style>
+
   :root{
     --paper:#E3D5BC;
     --card:#EFE4CE;
@@ -360,6 +361,28 @@
   }
   .toast.show{opacity:1;}
 
+
+  /* ---- multi-block sessions: finisher line + in-stack headers ---- */
+  .addon{
+    margin-top:11px;padding-top:10px;border-top:1px solid var(--rule);
+    font-family:var(--mono);font-size:11px;color:var(--pencil);letter-spacing:0.02em;
+  }
+  .addon b{color:var(--moss);font-weight:700;letter-spacing:0.06em;}
+  .blockhead{
+    display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    padding:11px 16px 8px;border-bottom:1px solid var(--rule-2);background:var(--card-2);
+    font-family:var(--mono);font-size:9px;letter-spacing:0.19em;text-transform:uppercase;
+    color:var(--oxide);font-weight:700;
+  }
+  .blockhead span{color:var(--pencil);letter-spacing:0.08em;font-weight:400;text-transform:none;font-size:10px;}
+  /* ---- standing rules ---- */
+  .rule{padding:11px 0;border-bottom:1px solid var(--edge);}
+  .rule-k{
+    font-family:var(--mono);font-size:9px;letter-spacing:0.19em;text-transform:uppercase;
+    color:var(--oxide);font-weight:700;margin-bottom:4px;
+  }
+  .rule-v{font-family:var(--serif);font-size:13px;line-height:1.55;color:var(--pencil);}
+
   @media (prefers-reduced-motion: reduce){
     #fb *,.tover,.tover *{transition:none !important;}
     .tover.closing .tnum{animation:none !important;}
@@ -375,7 +398,9 @@
     .tctrl button{letter-spacing:0.07em;padding:13px 3px;}
   }
 
+
 </style>
+
 
 <div id="fb">
   <div class="mast">
@@ -415,6 +440,7 @@
   </div>
 </div>
 
+
 <script>
 (function(){
 "use strict";
@@ -440,92 +466,157 @@ function save(){
 }
 
 /* ============================== program ============================== */
-// Block-pull sessions alternate hands with ~60s between hands (~2:20 rest per hand).
-const REST_BLOCK = "Alternate hands · 60s between hands";
-const REST_HANG  = "2.5 min between sets";
-const SEC_BLOCK = 60, SEC_HANG = 150, SEC_TEST = 120;
+// Block work is unilateral: hands alternate, so ~60s between hands is ~2:20 of
+// rest per hand. Every load is a % of your own tested max ON THAT SAME TOOL —
+// a block number never sets a hang load, or the other way round.
+//
+// The low-intensity density thread runs the WHOLE block, not just the re-entry.
+// Gilmore et al. (Sports Med Open, 2024, n=526 climbers) found frequent
+// low-intensity finger loading raised strength about as much as max hangs, and
+// that doing both was additive — roughly +2.5% and +3.2% alone, +5.8% together.
+// So it stays in through the max-hang phases as a short finisher.
+const SEC_BLOCK = 60, SEC_HANG = 120, SEC_TEST = 120, SEC_DEN = 30;
 
-function B(name, sets, hold, load, cue, edge){
-  return {kind:"block", name, sets, hold, edge:edge||"20mm", grip:"Half crimp",
-          rest:REST_BLOCK, restSec:SEC_BLOCK, load, cue};
-}
-function H(name, sets, hold, pct, cue){
-  return {kind:"hang", name, sets, hold, edge:"20mm", grip:"Half crimp · two arms",
-          rest:REST_HANG, restSec:SEC_HANG, load:{ref:"hangTotal", pct}, cue};
-}
+function blk(o){ return Object.assign(
+  {mode:"block", edge:"20mm", grip:"Half crimp", restSec:SEC_BLOCK, label:"Working sets"}, o); }
+function hng(o){ return Object.assign(
+  {mode:"hang", edge:"20mm", grip:"Half crimp · two arms", restSec:SEC_HANG, label:"Max hangs"}, o); }
+// the submax thread that keeps low-intensity loading alive once max work starts
+function den(pct, sets){ return blk({label:"Density finisher", sets:sets||2, hold:30,
+  restSec:SEC_DEN, load:{ref:"block20", pct:pct||0.45}}); }
+
+function W(name, cue, blocks, kind){ return {name, cue, blocks, kind:kind||"work"}; }
 
 const SESSIONS = [
-  /* ---- PHASE 1 · re-entry ---- */
-  B("Re-entry — density", 4, 20, {rpe:"5"},
-    "This will feel insultingly easy. That's the design. You're rebuilding tissue tolerance, not chasing a training effect."),
-  B("Re-entry — density", 4, 25, {rpe:"5–6"},
-    "Same load as last session if it felt right. Longer hold is the only change."),
-  B("Re-entry — density", 4, 30, {rpe:"6"},
-    "Longest holds of the block. Position quality matters more than load — no fingers rolling open."),
-  B("Re-entry — moderate", 4, 20, {rpe:"7"},
-    "First session with real intent. Still nowhere near max."),
-  B("Ramp to test", 5, 10, {rpe:"8"},
-    "Short and heavy-ish. This is a rehearsal for Friday's test — find the load that leaves ~2s in the tank."),
-  {kind:"test20", name:"TEST — 20mm max", sets:6, hold:10, edge:"20mm", grip:"Half crimp",
-    rest:"2 min per hand · alternate hands", restSec:SEC_BLOCK,
-    cue:"Ramp 3 pulls at ~50/70/85%, then add plates each attempt. Stop when you can't hold 10s with a clean half crimp. Max 6 loaded attempts per hand. Plates must break the floor or it doesn't count."},
 
-  /* ---- PHASE 2 · max block pulls ---- */
-  B("Heavy — 20mm", 4, 8, {ref:"block20", pct:0.85},
-    "Leave about 3s in the tank. If you couldn't have held 11s, the load is too high."),
-  B("Density — 20mm", 3, 25, {ref:"block20", pct:0.55},
-    "Deliberately easy. This is the tissue day and it must not touch your bouldering session."),
-  {kind:"test10", name:"TEST — 10mm max + work", sets:3, hold:8, edge:"10mm", grip:"Half crimp",
-    rest:REST_BLOCK, restSec:SEC_BLOCK,
-    cue:"No 10mm baseline yet. Ramp to a 10s max the same way you did on 20mm, then do 3 working sets at that load. Expect roughly 50–65% of your 20mm number. If skin is thin, run this on 20mm at 90% instead."},
-  B("Heavy — 20mm", 5, 8, {ref:"block20", pct:0.87},
-    "One more set than last week, slightly heavier. ~2s margin."),
-  B("Density — 20mm", 3, 30, {ref:"block20", pct:0.55},
-    "Still easy. Still Wednesday. Still not a hard day."),
-  B("Small edge — 10mm", 4, 8, {ref:"block10", pct:0.85},
-    "Half crimp holds or the set doesn't count. Watch for the index finger unloading.", "10mm"),
-  B("Heavy — 20mm", 5, 8, {ref:"block20", pct:0.90},
-    "Heaviest block-pull day of the program. 1–2s margin. Full warmup, no shortcuts."),
-  B("Density — 20mm", 3, 30, {ref:"block20", pct:0.58},
-    "Last density day. Slight bump, still comfortable."),
-  B("Small edge — 10mm", 5, 8, {ref:"block10", pct:0.88},
-    "Last small-edge day of the block. Then everything changes.", "10mm"),
+  /* ================= PHASE 1 · re-entry & baseline ================= */
+  W("Re-entry — density",
+    "This should feel insultingly easy. That's the design — you're rebuilding tissue tolerance, not chasing a training effect. Long holds, low load, no ego.",
+    [blk({sets:4, hold:20, load:{rpe:"5"}})]),
 
-  /* ---- PHASE 3 · deload + hang calibration ---- */
-  B("Deload", 3, 8, {ref:"block20", pct:0.70},
-    "Three sets and walk away. You've had three weeks of near-max unilateral loading and you're about to change stimulus."),
-  {kind:"testhang", name:"TEST — two-arm max hang", sets:5, hold:10, edge:"20mm", grip:"Half crimp · two arms",
-    rest:"2 min between attempts", restSec:SEC_TEST,
-    cue:"New modality, new baseline — a one-hand block number does not transfer. Ramp, then 10s hangs adding weight each set. Stop at the first set you can't complete cleanly. Five loaded attempts should find it; if you need a sixth, take it — this is the one day worth running past 20 minutes. Sort out the belt and plate logistics today, not in Week 7."},
-  H("Max hangs — intro", 3, 10, 0.80,
-    "First real hang session. Three sets to confirm the number from Wednesday was honest."),
+  W("Re-entry — density",
+    "Same load as last session if it felt right; the longer hold is the only change. Loading like this is real strength work in its own right, not just a warm-up for the heavy weeks.",
+    [blk({sets:4, hold:25, load:{rpe:"5–6"}})]),
 
-  /* ---- PHASE 4 · max hangs ---- */
-  H("Max hangs", 5, 10, 0.85,
-    "Have the plates racked before you start — this is the tightest session in the program for time."),
-  B("Block pulls — maintenance", 4, 8, {ref:"block20", pct:0.80},
-    "Keeps the unilateral work alive so any left/right gap doesn't re-open."),
-  H("Max hangs", 5, 10, 0.88,
-    "Heaviest hangs so far. If set 4 or 5 fails, that's fine — log it and hold the load next session."),
-  H("Max hangs", 5, 10, 0.88,
-    "Same load as Friday. Consolidating, not pushing."),
-  B("Block pulls — maintenance", 3, 8, {ref:"block20", pct:0.80},
-    "Last working session before retest. Keep it clean and short."),
-  {kind:"retest", name:"RETEST — both", sets:6, hold:10, edge:"20mm + 10mm", grip:"Half crimp",
-    rest:"2 min per hand · alternate hands", restSec:SEC_BLOCK,
-    cue:"Budget 30 minutes today — this is two tests back to back. Same protocol as the baselines: one-hand block max on 20mm, then after 5 minutes the two-arm hang max. Same edge, same grip, same rest, same time of day. Then take 5–7 days off finger-specific training."}
+  W("Test rehearsal",
+    "Short and heavier — a dress rehearsal for Monday's test. Find the load that leaves about 2s in the tank. If anything felt tender or stiff this week, repeat session 2 instead and push the test back a session; two weeks off costs an experienced climber very little strength, but connective tissue lags behind it.",
+    [blk({sets:5, hold:10, load:{rpe:"8"}})]),
+
+  W("TEST — 20mm max",
+    "Ramp 3 pulls per hand at roughly 50 / 70 / 85%, then add plates each attempt. Seven seconds is the test — stop when you can't hold 7s with a clean half crimp. Five loaded attempts per hand, maximum. The plates must break the floor or the number is fiction. Record both hands: more than 8% apart and the weaker side gets an extra set for the rest of the block.",
+    [blk({sets:5, hold:7, restSec:SEC_BLOCK, label:"Ramped attempts"})], "test20"),
+
+  /* ================= PHASE 2 · max block pulls ================= */
+  W("Heavy — 20mm",
+    "First load off the new baseline. A 7s max makes 8s working holds sit a little heavier than they would off a 10s max, so this opens at 80% rather than 85%. Leave about 3s in the tank — if you couldn't have held 11s, it's too heavy.",
+    [blk({sets:4, hold:8, load:{ref:"block20", pct:0.80}})]),
+
+  W("Density — 20mm",
+    "Deliberately easy, and it is not filler. Frequent low-intensity loading builds strength on its own and stacks with the heavy days rather than just recovering from them. This thread runs all the way to week 8.",
+    [blk({sets:3, hold:30, restSec:45, load:{ref:"block20", pct:0.45}})]),
+
+  W("Small edge — 10mm calibration",
+    "No 10mm baseline yet. Ramp to a 7s max, then 3 working sets at what you found. Expect roughly 50–65% of your 20mm number. Skin is the limiter on this edge, not strength — if your tips are thin or a joint feels tender, run this on 20mm at 90% and skip 10mm entirely. You lose almost nothing.",
+    [blk({edge:"10mm", sets:3, hold:8, label:"Ramp, then work"})], "test10"),
+
+  W("Heavy — 20mm",
+    "Same shape, slightly heavier. Around 2–3s of margin.",
+    [blk({sets:4, hold:8, load:{ref:"block20", pct:0.83}})]),
+
+  W("Density — 20mm",
+    "Still easy, still Wednesday, still not a hard day. If the heavy days are going well this is the session that lets them keep going well.",
+    [blk({sets:3, hold:30, restSec:45, load:{ref:"block20", pct:0.45}})]),
+
+  W("Small edge — 10mm",
+    "The one loaded small-edge day of the block. Half crimp holds or the set doesn't count — watch for the index finger quietly unloading. Any doubt at all about skin or joints and this becomes 20mm at 90%.",
+    [blk({edge:"10mm", sets:4, hold:8, load:{ref:"block10", pct:0.85}})]),
+
+  W("Heavy — 20mm",
+    "Fifth set added. Margin down to about 2s.",
+    [blk({sets:5, hold:8, load:{ref:"block20", pct:0.86}})]),
+
+  W("Density — 20mm",
+    "Small bump, still comfortable. You should finish this able to boulder well.",
+    [blk({sets:3, hold:30, restSec:45, load:{ref:"block20", pct:0.48}})]),
+
+  W("Open hand — 20mm",
+    "Three-finger drag or open hand, by feel at RPE 8 — no test needed, and none of your percentages apply here. It's the most tendon-friendly grip you have and it covers the slopers and rounded holds that half crimp misses. Skip it if the week has been heavy.",
+    [blk({grip:"Open hand / drag", sets:4, hold:8, load:{rpe:"8"}})]),
+
+  W("Heavy — 20mm",
+    "Heaviest block-pull day of the program. 1–2s of margin. Full warm-up, no shortcuts, and stop the session if a finger starts doing something the others aren't.",
+    [blk({sets:5, hold:8, load:{ref:"block20", pct:0.90}})]),
+
+  W("Density — 20mm",
+    "Last density-only session. From Monday the whole stimulus changes.",
+    [blk({sets:3, hold:30, restSec:45, load:{ref:"block20", pct:0.48}})]),
+
+  /* ================= PHASE 3 · deload & hang calibration ================= */
+  W("Deload",
+    "Three sets and walk away. Three weeks of near-max unilateral loading is behind you and you're about to change tools — this week is for consolidating, not proving anything.",
+    [blk({sets:3, hold:8, load:{ref:"block20", pct:0.70}})]),
+
+  W("TEST — two-arm max hang",
+    "New tool, new baseline — a one-hand block number does not transfer to a two-arm hang. Ramp, then 10s hangs adding weight each set. Ten seconds here because your hang work is 10s: test the way you'll train. Stop at the first set you can't finish cleanly. Sort out the belt and plate logistics today, not in week 7.",
+    [hng({sets:5, hold:10, restSec:SEC_TEST, label:"Ramped attempts"})], "testhang"),
+
+  W("Max hangs — intro",
+    "First real hang session — three sets to confirm Wednesday's number was honest, then the density finisher.",
+    [hng({sets:3, hold:10, load:{ref:"hangTotal", pct:0.80}}), den(0.45, 2)]),
+
+  /* ================= PHASE 4 · max hangs ================= */
+  W("Max hangs",
+    "Have the plates racked before you start — this is the tightest session in the program for time. The finisher is short and it's the main reason this block should outperform a hangs-only one.",
+    [hng({sets:5, hold:10, load:{ref:"hangTotal", pct:0.85}}), den(0.45, 2)]),
+
+  W("Block pulls — maintenance",
+    "Keeps the unilateral work alive so any left/right gap doesn't quietly reopen while you're hanging two-handed.",
+    [blk({sets:4, hold:8, load:{ref:"block20", pct:0.80}}), den(0.45, 2)]),
+
+  W("Max hangs",
+    "Heaviest hangs so far. If set 4 or 5 fails, that's fine — log it and hold the load next session rather than pushing through.",
+    [hng({sets:5, hold:10, load:{ref:"hangTotal", pct:0.88}}), den(0.45, 2)]),
+
+  W("Max hangs",
+    "Same load as Friday. Consolidating, not pushing.",
+    [hng({sets:5, hold:10, load:{ref:"hangTotal", pct:0.88}}), den(0.45, 2)]),
+
+  W("Block pulls — maintenance",
+    "Last working session before the retest. Keep it clean and short.",
+    [blk({sets:3, hold:8, load:{ref:"block20", pct:0.80}}), den(0.45, 2)]),
+
+  W("RETEST — both",
+    "Budget 30 minutes today — this is two tests back to back. Same protocol as the baselines: one-hand block max on 20mm at 7s, then after 5 minutes the two-arm hang max at 10s. Same edge, same grip, same rest, same time of day, ideally similar skin. Then take 5–7 days off finger-specific training before starting anything new.",
+    [blk({sets:5, hold:7, restSec:SEC_BLOCK, label:"Block max — 20mm"}),
+     hng({sets:5, hold:10, restSec:SEC_TEST, label:"Hang max — 20mm"})], "retest")
 ];
 
-const REENTRY = B("Re-entry — long layoff", 4, 20, {rpe:"5–6"},
-  "You've been out more than two weeks. This session doesn't advance the program — it re-opens the door. Long holds, low load, no ego.");
+const REENTRY = W("Re-entry — long layoff",
+  "You've been out more than two weeks. This session doesn't advance the program — it re-opens the door. Long holds, low load, no ego. The next session picks up exactly where you left off.",
+  [blk({sets:4, hold:20, load:{rpe:"5–6"}})]);
 
 const PHASES = [
-  {n:1, from:0,  to:5,  label:"Re-entry & baseline"},
-  {n:2, from:6,  to:14, label:"Max block pulls"},
+  {n:1, from:0,  to:3,  label:"Re-entry & baseline"},
+  {n:2, from:4,  to:14, label:"Max block pulls"},
   {n:3, from:15, to:17, label:"Deload & hang calibration"},
   {n:4, from:18, to:23, label:"Max hangs"}
 ];
 function phaseOf(i){ return PHASES.find(p=>i>=p.from && i<=p.to) || PHASES[3]; }
+
+// Standing rules, shown on the Program tab. These come out of the evidence review
+// and apply across the whole block rather than to any one session.
+const RULES = [
+  ["Autoregulate",
+   "Six finger-loading exposures a week (3 board + 3 bouldering) land on the same tissue. If the day's ramp feels more than about 20% down, or any joint or pulley is tender, drop to the density thread only and boulder."],
+  ["Contact strength lives on the wall",
+   "Nothing here trains rate of force development or catching a hold dynamically — those are half of max bouldering strength and they're neural. Get them from limit boulders and dynamic board moves in the session that follows, not from more board time."],
+  ["Never full crimp under load",
+   "A2 pulley force runs roughly 30x higher in a closed crimp than in an open hand. No loaded full crimp anywhere in this block."],
+  ["Stop rules",
+   "Any pop, click or sharp point-pain at the base or mid-segment of a finger ends the session. So does pain above 2/10 during a pull, or one finger behaving differently from the others."],
+  ["Tissue support",
+   "About 15g gelatin or hydrolysed collagen plus ~200mg vitamin C, 30–60 min before loading. Modest evidence — it doubles collagen synthesis markers, which is not the same as proven injury or performance benefit. Sleep and protein do more."]
+];
 
 /* ============================== state ============================== */
 const DEFAULT = {
@@ -678,9 +769,9 @@ function fmt(x){
   const r = Math.round(x*100)/100;
   return (r%1===0) ? String(r) : r.toFixed(2).replace(/0$/,"");
 }
-// Returns {L, R, sub} for a session definition, already rounded to real plates.
-function loadsFor(def, mult){
-  const L = def.load;
+// Load for ONE block of a session, already rounded to real plates.
+function blockLoads(b, mult){
+  const L = b.load;
   if(!L) return null;
   if(L.rpe) return {L:"RPE "+L.rpe, R:"RPE "+L.rpe, rpe:true};
   const m = S.maxes;
@@ -774,23 +865,22 @@ document.addEventListener("visibilitychange", ()=>{
 
 function ctxRows(){
   const p = currentPlan();
-  if(!p.def) return {rows:[], def:null, date:null, loads:null};
-  const lo = loadsFor(p.def, p.mult);
-  return {rows: rowsFor(p.def, lo), def:p.def, date:p.date, loads:lo};
+  if(!p.def) return {rows:[], def:null, date:null};
+  return {rows: rowsFor(p.def, p.mult), def:p.def, date:p.date};
 }
-function phaseDur(def, phase){
+function phaseDur(row, phase){
   if(phase==="prep") return Math.max(0, Number(S.prep)||0)*1000;
-  if(phase==="hold") return def.hold*1000;
-  return (def.restSec||60)*1000;
+  if(phase==="hold") return ((row && row.hold) || 8)*1000;
+  return ((row && row.restSec) || 60)*1000;
 }
 function startPhase(i, phase){
   const c = ctxRows();
   if(!c.def) return;
   if(i >= c.rows.length){ finishStack(); return; }
-  if(phase==="prep" && phaseDur(c.def,"prep") <= 0) phase = "hold";
+  if(phase==="prep" && phaseDur(c.rows[i],"prep") <= 0) phase = "hold";
   T.on=true; T.i=i; T.phase=phase; T.paused=false; T.lastBeep=-1; T.ready=null;
   setClosing(false);
-  T.dur = phaseDur(c.def, phase);
+  T.dur = phaseDur(c.rows[i], phase);
   T.endsAt = performance.now() + T.dur;
   if(phase==="hold") CUE.go(); else if(phase==="rest") CUE.rest();
   document.body.classList.add("timing");
@@ -872,11 +962,11 @@ function paintTimer(leftMs){
   else { bar.classList.add("rest"); label="Rest"; }
 
   const hand = row.hand==="L" ? "Left hand" : row.hand==="R" ? "Right hand" : "Both hands";
-  $("tsession").textContent = def.name || "";
+  $("tsession").textContent = ((def.blocks||[]).length > 1 && row.blockLabel)
+    ? (def.name||"") + " · " + row.blockLabel : (def.name || "");
   $("tset").innerHTML = (resting ? '<em>Next — </em>' : '') + "Set " + (row.n||1) + ": " + hand;
-  const noUnit = c.loads && c.loads.rpe;
-  $("tload").innerHTML = (row.load!=null ? row.load : "—") + (noUnit ? "" : ' <small>'+unit()+'</small>');
-  $("tedge").textContent = (def.edge||"") + " · " + (def.grip||"").toLowerCase();
+  $("tload").innerHTML = (row.load!=null ? row.load : "—") + (row.noUnit ? "" : ' <small>'+unit()+'</small>');
+  $("tedge").textContent = (row.edge||"") + " · " + (row.grip||"").toLowerCase();
   $("tphase").textContent = T.paused ? label+" · paused" : label;
   $("tnum").textContent = mmss(left);
   $("t-auto").setAttribute("aria-checked", String(!!S.autoAdvance));
@@ -1013,8 +1103,7 @@ function renderStation(){
   if(selStation==null || !SESSIONS[selStation]){ box.innerHTML=""; box.className="railinfo"; return; }
   const i = selStation, def = SESSIONS[i], ph = phaseOf(i);
   const sc = sessionSchedule()[i] || {};
-  const L = def.load;
-  const load = L ? (L.rpe ? "RPE "+L.rpe : Math.round(L.pct*100)+"% of max") : "test day";
+
   let status;
   if(sc.status==="done"){
     const e = sc.entry || {}, bits = [];
@@ -1032,56 +1121,81 @@ function renderStation(){
       '<button class="stn-x" id="stn-close" aria-label="Close">×</button>'
     + '<div class="stn-n">Session '+(i+1)+' · Phase '+ph.n+' · '+ph.label+'</div>'
     + '<div class="stn-t">'+def.name+'</div>'
-    + '<div class="stn-s">'+def.edge+' · '+def.sets+(def.kind==="hang" ? " sets" : " / hand")
-    +   ' × '+def.hold+'s · '+load+'</div>'
+    + (def.blocks||[]).map(b=>'<div class="stn-s">'+blockLine(b)+'</div>').join("")
     + '<div class="stn-st">'+status+'</div>'
     + ((sc.status==="done" && sc.entry && sc.entry.notes)
         ? '<div class="stn-note">'+esc(sc.entry.notes)+'</div>' : '');
   $("stn-close").onclick = ()=>{ selStation=null; renderRail(); };
 }
-function estMin(def){
-  const rows = (def.kind==="hang") ? def.sets : def.sets*2;
-  const prep = Math.max(0, Number(S.prep)||0);
-  const secs = rows*def.hold + Math.max(0,rows-1)*(def.restSec||60) + rows*prep;
-  return Math.round(secs/60);
+// Each row carries everything the timer needs, so a session can mix a heavy block
+// with a density finisher and the clock adapts per row.
+function rowsFor(def, mult){
+  const rows = [];
+  (def.blocks||[]).forEach((b, bi)=>{
+    const lo = blockLoads(b, mult);
+    const two = (b.mode === "hang");
+    for(let i=0;i<b.sets;i++){
+      const base = {hold:b.hold, restSec:b.restSec, edge:b.edge, grip:b.grip, mode:b.mode,
+                    blockIdx:bi, blockLabel:b.label, sub:lo?lo.sub:null,
+                    noUnit:!!(lo && lo.rpe)};
+      if(two){
+        rows.push(Object.assign({n:i+1, lbl:"Set "+(i+1), hand:"", load:lo?lo.L:"—"}, base));
+      }else{
+        rows.push(Object.assign({n:i+1, lbl:"Set "+(i+1), hand:"L", load:lo?lo.L:"—"}, base));
+        rows.push(Object.assign({n:i+1, lbl:"",           hand:"R", load:lo?lo.R:"—"}, base));
+      }
+    }
+  });
+  return rows;
 }
-function restLabel(def){
-  const r = def.restSec || 60;
+function blockRows(b){ return (b.mode==="hang") ? b.sets : b.sets*2; }
+function estMin(def){
+  const prep = Math.max(0, Number(S.prep)||0);
+  let secs = 0;
+  (def.blocks||[]).forEach((b,i)=>{
+    const n = blockRows(b);
+    secs += n*(b.hold + prep) + (n-1)*b.restSec;
+    if(i>0) secs += b.restSec;               // gap between blocks
+  });
+  return Math.max(1, Math.round(secs/60));
+}
+function restLabel(sec){
+  const r = sec || 60;
   if(r >= 90){ const m = r/60; return (m % 1 ? m.toFixed(1) : m) + " min"; }
   return r + "s";
 }
+function pctLabel(b){
+  const L = b.load;
+  if(!L) return "test";
+  if(L.rpe) return "RPE "+L.rpe;
+  return Math.round(L.pct*100)+"%";
+}
+function blockLine(b){
+  return b.edge+" · "+b.sets+(b.mode==="hang" ? " sets" : " / hand")
+       + " × "+b.hold+"s · "+pctLabel(b);
+}
 function specLine(def){
+  const b = (def.blocks||[])[0] || {};
   const cells = [
-    ["Edge",  def.edge],
-    ["Grip",  def.kind==="hang" ? "Half crimp <small>2 arms</small>" : "Half crimp"],
-    ["Hold",  def.hold + "s"],
-    ["Sets",  def.kind==="hang" ? def.sets + " <small>total</small>"
-                                : def.sets + " <small>/ hand</small>"],
-    ["Rest",  restLabel(def)],
+    ["Edge",  b.edge || "—"],
+    ["Grip",  b.mode==="hang" ? "Half crimp <small>2 arms</small>" : (b.grip||"—")],
+    ["Hold",  (b.hold||0) + "s"],
+    ["Sets",  b.mode==="hang" ? b.sets + " <small>total</small>"
+                              : b.sets + " <small>/ hand</small>"],
+    ["Rest",  restLabel(b.restSec)],
     ["Time",  "≈" + estMin(def) + " <small>min</small>"]
   ];
-  return '<div class="specs">' + cells.map(c=>
+  let h = '<div class="specs">' + cells.map(c=>
     '<div><div class="k">'+c[0]+'</div><div class="v">'+c[1]+'</div></div>').join("") + '</div>';
+  (def.blocks||[]).slice(1).forEach(x=>{
+    h += '<div class="addon"><b>+ '+x.label+'</b> '+blockLine(x)+'</div>';
+  });
+  return h;
 }
-
-function rowsFor(def, loads){
-  const rows = [];
-  const twoHanded = (def.kind==="hang");
-  for(let i=0;i<def.sets;i++){
-    if(twoHanded){
-      rows.push({n:i+1, lbl:"Set "+(i+1), hand:"", load:loads?loads.L:"—"});
-    }else{
-      rows.push({n:i+1, lbl:"Set "+(i+1), hand:"L", load:loads?loads.L:"—"});
-      rows.push({n:i+1, lbl:"",           hand:"R", load:loads?loads.R:"—"});
-    }
-  }
-  return rows;
-}
-
-function renderStack(def, loads, date){
+function renderStack(def, mult, date){
   const draft = S.drafts[date] || [];
-  const rows = rowsFor(def, loads);
-  const u = (loads && loads.rpe) ? "" : " <small>"+unit()+"</small>";
+  const rows = rowsFor(def, mult);
+  const multi = (def.blocks||[]).length > 1;
   let h='<div class="startbar">'
     + '<button class="btn primary" id="btn-start">Start timer</button>'
     + '<button class="sw" id="btn-auto" role="switch" aria-checked="'+(S.autoAdvance?"true":"false")+'">'
@@ -1089,7 +1203,14 @@ function renderStack(def, loads, date){
     + '</button>'
     + '</div>';
   h+='<div class="stack" id="stack">';
+  let seen = -1;
   rows.forEach((r,i)=>{
+    if(multi && r.blockIdx !== seen){
+      seen = r.blockIdx;
+      const b = def.blocks[r.blockIdx];
+      h += '<div class="blockhead">'+b.label+'<span>'+blockLine(b)+'</span></div>';
+    }
+    const u = r.noUnit ? "" : ' <small>'+unit()+'</small>';
     h += '<div class="set" data-i="'+i+'" data-on="'+(draft[i]?"true":"false")+'">'
        +   '<i class="fill"></i>'
        +   '<button class="set-body" data-i="'+i+'" aria-label="Start from '+(r.lbl||"set")+' '+r.hand+'">'
@@ -1101,15 +1222,20 @@ function renderStack(def, loads, date){
        + '</div>';
   });
   h+='</div>';
+  const b0 = (def.blocks||[])[0] || {};
+  const restTxt = (b0.mode==="hang" ? restLabel(b0.restSec)+" between sets"
+                                    : "Alternate hands · "+restLabel(b0.restSec)+" between hands");
   h+='<div class="rest-note" style="display:flex;justify-content:space-between;align-items:center;gap:10px">'
-    + '<span>'+def.rest+' · tap a row to start there</span>'
-    + '<button id="btn-clear" style="background:none;border:0;padding:0;color:var(--dim);font:inherit;'
+    + '<span>'+restTxt+' · tap a row to start there</span>'
+    + '<button id="btn-clear" style="background:none;border:0;padding:0;color:var(--pencil);font:inherit;'
     + 'cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap">Clear</button>'
     + '</div>';
-  if(loads && loads.sub) h+='<div class="rest-note" style="border-top:0;padding-top:0;color:var(--beech-dim)">'+loads.sub+'</div>';
+  const subs = [...new Set(rows.map(r=>r.sub).filter(Boolean))];
+  subs.forEach(x=>{
+    h+='<div class="rest-note" style="border-top:0;padding-top:0;color:var(--oxide)">'+x+'</div>';
+  });
   return h;
 }
-
 function testFields(kind){
   const u = unit();
   if(kind==="test20") return `
@@ -1162,7 +1288,6 @@ function renderToday(){
   }
 
   const def = p.def;
-  const loads = loadsFor(def, p.mult);
   const ph = phaseOf(p.idx);
   const t = todayYmd();
   const dayGap = daysBetween(t, p.date);
@@ -1198,10 +1323,10 @@ function renderToday(){
     +     specLine(def)
     +     '<div class="cue">'+def.cue+'</div>'
     +   '</div>'
-    +   renderStack(def, loads, p.date)
+    +   renderStack(def, p.mult, p.date)
     +   '<div class="fields">'
     +     testFields(def.kind)
-    +     (def.kind==="block"||def.kind==="hang" ? `
+    +     (def.kind==="work" ? `
         <div class="duo">
           <div class="fld"><label>Load used — L (${unit()})</label><input type="number" step="any" id="f_useL"></div>
           <div class="fld"><label>Load used — R (${unit()})</label><input type="number" step="any" id="f_useR"></div>
@@ -1239,15 +1364,12 @@ function renderProgram(){
     h += '<div class="prog-phase"><h4>Phase '+p.n+'</h4><span>'+p.label+'</span></div>';
     for(let i=p.from;i<=p.to;i++){
       const d = SESSIONS[i];
-      const L = d.load;
-      let load = "—";
-      if(L && L.rpe) load = "RPE "+L.rpe;
-      else if(L) load = Math.round(L.pct*100)+"%";
-      else load = "test";
-      const cls = i<done ? "" : (i===done ? "" : "");
-      h += '<div class="line '+cls+'"><span class="d">'+(i+1)+(i<done?" ✓":"")+'</span>'
-        +  '<span class="t">'+d.name+'<em>'+d.edge+' · '+d.sets+(d.kind==="hang"?" sets":" /hand")+' × '+d.hold+'s</em></span>'
-        +  '<span class="r">'+load+'</span></div>';
+      const b0 = (d.blocks||[])[0] || {};
+      const extra = (d.blocks||[]).length > 1 ? ' + finisher' : '';
+      h += '<div class="line"><span class="d">'+(i+1)+(i<done?" ✓":"")+'</span>'
+        +  '<span class="t">'+d.name+'<em>'+b0.edge+' · '+b0.sets
+        +    (b0.mode==="hang"?" sets":" /hand")+' × '+b0.hold+'s'+extra+'</em></span>'
+        +  '<span class="r">'+pctLabel(b0)+'</span></div>';
     }
   });
   h += '</div>';
@@ -1264,9 +1386,13 @@ function renderProgram(){
       + 'Your hands differ by <b>'+diff.toFixed(1)+'%</b> on 20mm. Add one extra set on the weaker side for the rest of the block.</div>';
   }
   h += '</div>';
+  h += '<div class="up"><h3>Standing rules</h3>';
+  RULES.forEach(r=>{
+    h += '<div class="rule"><div class="rule-k">'+r[0]+'</div><div class="rule-v">'+r[1]+'</div></div>';
+  });
+  h += '</div>';
   return h;
 }
-
 function renderHistory(){
   const ds = Object.keys(S.entries).sort().reverse();
   if(!ds.length) return '<div class="empty">Nothing logged yet. Your first session is Friday 24 Jul.</div>';

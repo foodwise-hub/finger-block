@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finger Block</title>
+<meta name="description" content="8-week finger strength log — tension block to max hangs">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#E3D5BC">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Finger Block">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  html,body{margin:0;padding:0;background:#E3D5BC;}
+  body{
+    /* keep content clear of the notch / home indicator when installed */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+</style>
+</head>
+<body>
+<style>
+  :root{
+    --paper:#E3D5BC;
+    --card:#EFE4CE;
+    --card-2:#E7D9BC;
+    --sunk:#DBCBAB;
+    --rule:#D6C4A2;
+    --rule-2:#DDCDAD;
+    --edge:#C6B18A;
+    --ink:#2B2620;
+    --pencil:#6B5F4E;
+    --faint:#8C7F69;
+    --oxide:#9C4A2F;
+    --oxide-soft:#C08A72;
+    --moss:#55613E;
+    --alarm:#A3301B;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --contour:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='110'%3E%3Cg fill='none' stroke='%23B9A57F' stroke-width='1' opacity='.5'%3E%3Cpath d='M-10 22 Q 40 4 78 24 T 160 18'/%3E%3Cpath d='M-10 46 Q 42 28 80 48 T 160 42'/%3E%3Cpath d='M-10 70 Q 44 52 82 72 T 160 66'/%3E%3Cpath d='M-10 94 Q 46 76 84 96 T 160 90'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  *{box-sizing:border-box;}
+  #fb{
+    background:var(--paper);background-image:var(--contour);
+    color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;
+    max-width:640px;margin:0 auto;padding:0 0 64px;min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  #fb h1,#fb h2,#fb h3{margin:0;font-weight:900;letter-spacing:-0.02em;}
+  #fb button{font-family:inherit;cursor:pointer;}
+  #fb input,#fb textarea,#fb select{font-family:var(--mono);}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:10px;letter-spacing:0.18em;
+    text-transform:uppercase;color:var(--pencil);
+  }
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+  /* ---- masthead ---- */
+  .mast{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:20px 20px 2px;}
+  .mast h1{font-size:14px;letter-spacing:0.17em;text-transform:uppercase;}
+  .mast .count{font-family:var(--mono);font-size:11px;color:var(--pencil);letter-spacing:0.07em;}
+
+  /* ---- signature: the block drawn as a route ---- */
+  .rail{padding:10px 18px 6px;}
+  .rail svg{width:100%;height:auto;display:block;overflow:visible;}
+  .rail .stn{cursor:pointer;}
+  .rail .stn:hover circle:not([fill="transparent"]){stroke:var(--ink);stroke-width:1.6;}
+  .railinfo{display:none;}
+  .railinfo.on{
+    display:block;position:relative;margin:2px 18px 14px;padding:12px 34px 12px 13px;
+    background:var(--card);border:1px solid var(--edge);border-left:3px solid var(--oxide);
+    border-radius:2px;box-shadow:2px 2px 0 rgba(155,132,94,.28);
+  }
+  .railinfo.done{border-left-color:var(--moss);}
+  .stn-x{
+    position:absolute;top:6px;right:7px;background:none;border:0;cursor:pointer;
+    color:var(--faint);font-size:19px;line-height:1;padding:3px 6px;
+  }
+  .stn-x:hover{color:var(--oxide);}
+  .stn-n{font-family:var(--mono);font-size:8.5px;letter-spacing:0.19em;text-transform:uppercase;color:var(--pencil);}
+  .stn-t{font-size:17px;font-weight:900;letter-spacing:-0.02em;margin-top:3px;}
+  .stn-s{font-family:var(--mono);font-size:11px;color:var(--ink);margin-top:4px;letter-spacing:0.02em;}
+  .stn-st{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:var(--oxide);margin-top:6px;}
+  .railinfo.done .stn-st{color:var(--moss);}
+  .stn-note{font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--pencil);margin-top:7px;}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);}
+  .tabs button{
+    flex:1;background:none;border:0;padding:12px 0;
+    font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;
+    color:var(--pencil);border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  .tabs button[aria-selected="true"]{color:var(--oxide);border-bottom-color:var(--oxide);font-weight:700;}
+  .tabs button:focus-visible{outline:2px solid var(--oxide);outline-offset:-2px;}
+
+  .wrap{padding:18px;}
+
+  /* ---- session card: a guidebook entry ---- */
+  .card{
+    background:var(--card);border:1px solid var(--edge);border-radius:2px;overflow:hidden;
+    box-shadow:2px 2px 0 rgba(155,132,94,.32);
+  }
+  .card-head{padding:16px 16px 15px;border-bottom:1px solid var(--rule);}
+  .card-head .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:7px;}
+  .card-head h2{font-size:25px;line-height:1.08;}
+  .grade{
+    flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;
+    border:2px solid var(--oxide);color:var(--oxide);
+    font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:0.01em;
+  }
+  .specs{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:15px 10px;
+    margin-top:15px;padding-top:14px;border-top:1px solid var(--rule);
+  }
+  .specs .k{
+    font-family:var(--mono);font-size:8.5px;letter-spacing:0.2em;text-transform:uppercase;
+    color:var(--pencil);margin-bottom:4px;
+  }
+  .specs .v{font-size:19px;font-weight:900;letter-spacing:-0.025em;line-height:1.12;}
+  .specs .v small{font-size:10px;font-weight:600;color:var(--pencil);letter-spacing:0.02em;}
+  /* the coaching note is prose, so it is set as prose */
+  .cue{
+    font-family:var(--serif);font-style:italic;font-size:13.5px;line-height:1.55;
+    color:var(--pencil);margin-top:15px;padding-top:13px;border-top:1px dashed var(--edge);
+  }
+
+  /* ---- set stack ---- */
+  .stack{padding:0;}
+  .set{
+    position:relative;display:grid;grid-template-columns:1fr 30px;align-items:center;gap:10px;
+    padding:0 16px;height:46px;border-bottom:1px solid var(--rule-2);
+  }
+  .set:last-child{border-bottom:0;}
+  .set:hover{background:var(--card-2);}
+  .set .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(156,74,47,.11);pointer-events:none;}
+  .set.active{background:var(--card-2);box-shadow:inset 3px 0 0 var(--oxide);}
+  .set.active.resting{box-shadow:inset 3px 0 0 var(--moss);}
+  .set.active.resting .fill{background:rgba(85,97,62,.11);}
+  .set.next{box-shadow:inset 3px 0 0 var(--oxide-soft);background:var(--card-2);}
+  .set-body{
+    display:grid;grid-template-columns:52px 26px 1fr;gap:10px;align-items:center;
+    background:none;border:0;padding:0;height:100%;width:100%;text-align:left;color:inherit;
+    position:relative;z-index:1;
+  }
+  .set .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:0.12em;color:var(--pencil);text-transform:uppercase;}
+  .set .hand{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--pencil);}
+  .set .load{font-family:var(--mono);font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
+  .set .load small{font-size:11px;color:var(--pencil);margin-left:3px;letter-spacing:0.04em;}
+  .set .tick{
+    justify-self:end;width:21px;height:21px;border:1.5px solid var(--edge);border-radius:50%;
+    display:grid;place-items:center;font-size:11px;color:transparent;background:none;
+    position:relative;z-index:1;padding:0;
+  }
+  .set[data-on="true"] .load{color:var(--faint);text-decoration:line-through;text-decoration-thickness:1px;}
+  .set[data-on="true"] .hand{color:var(--faint);}
+  .set[data-on="true"] .tick{background:var(--moss);border-color:var(--moss);color:var(--card);}
+  .set-body:focus-visible,.set .tick:focus-visible{outline:2px solid var(--oxide);outline-offset:-2px;}
+  .rest-note{
+    padding:11px 16px;font-family:var(--mono);font-size:10.5px;color:var(--pencil);
+    border-top:1px solid var(--rule);letter-spacing:0.04em;
+  }
+  .startbar{display:flex;gap:9px;padding:13px 16px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+  .startbar .btn{flex:1;padding:12px;}
+
+  /* ---- countdown ---- */
+  .tover{
+    position:fixed;inset:0;z-index:60;
+    font-family:var(--sans);color:var(--ink);
+    background:var(--paper);background-image:var(--contour);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:58px 20px calc(80px + env(safe-area-inset-bottom));
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .16s ease,visibility .16s;
+  }
+  .tover.up{opacity:1;visibility:visible;pointer-events:auto;}
+  .ttop{
+    position:absolute;top:calc(16px + env(safe-area-inset-top));left:0;right:0;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:0 18px;max-width:560px;margin:0 auto;
+  }
+  .tsession{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.17em;text-transform:uppercase;
+    color:var(--pencil);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .autochip{
+    display:flex;align-items:center;gap:7px;flex:none;cursor:pointer;
+    background:none;border:1px solid var(--edge);border-radius:2px;padding:6px 9px;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--faint);
+  }
+  .autochip .dot{width:7px;height:7px;border-radius:50%;background:var(--edge);}
+  .autochip[aria-checked="true"]{color:var(--moss);border-color:var(--moss);}
+  .autochip[aria-checked="true"] .dot{background:var(--moss);}
+
+  .tload{
+    font-family:var(--mono);font-variant-numeric:tabular-nums;
+    font-size:15px;font-weight:700;letter-spacing:0.04em;color:var(--oxide);
+    text-align:center;line-height:1.2;
+  }
+  .tload small{font-size:11px;color:var(--oxide-soft);margin-left:2px;}
+  .tset{
+    font-size:clamp(23px,6.8vw,31px);font-weight:900;letter-spacing:-0.028em;
+    color:var(--ink);text-align:center;margin-top:4px;line-height:1.12;max-width:16ch;
+  }
+  .tset em{font-style:normal;color:var(--faint);font-weight:700;}
+  .tedge{
+    font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
+    color:var(--pencil);text-align:center;margin-top:6px;
+  }
+  .tphase{
+    font-family:var(--mono);font-size:11px;letter-spacing:0.34em;text-transform:uppercase;
+    color:var(--oxide);text-align:center;margin:24px 0 2px;font-weight:700;
+  }
+  .tover.rest .tphase{color:var(--moss);}
+  .tover.prep .tphase{color:var(--pencil);}
+  .tnum{
+    font-variant-numeric:tabular-nums;
+    font-size:clamp(86px,31vw,184px);font-weight:900;line-height:0.9;
+    letter-spacing:-0.05em;color:var(--ink);text-align:center;
+  }
+  .tover.prep .tnum{color:var(--pencil);}
+  .tprog{width:min(70vw,320px);height:3px;background:var(--edge);margin-top:22px;}
+  .tprog i{display:block;height:100%;width:0;background:var(--oxide);transition:width .1s linear;}
+  .tover.rest .tprog i{background:var(--moss);}
+
+  @keyframes tpulse{
+    0%,100%{transform:scale(1);opacity:1;}
+    50%{transform:scale(1.08);opacity:.68;}
+  }
+  .tover.closing .tnum{color:var(--alarm);animation:tpulse .5s ease-in-out infinite;}
+  .tover.closing .tphase{color:var(--alarm);}
+  .tover.closing .tprog i{background:var(--alarm);}
+
+  .tctrl{
+    position:absolute;left:0;right:0;bottom:calc(20px + env(safe-area-inset-bottom));
+    display:flex;gap:7px;max-width:520px;margin:0 auto;padding:0 18px;
+  }
+  .tctrl button{
+    flex:1;cursor:pointer;background:none;border:1px solid var(--edge);color:var(--pencil);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;
+    padding:13px 5px;border-radius:2px;
+  }
+  .tctrl button:hover{color:var(--ink);border-color:var(--pencil);}
+  .tctrl button.pause{color:var(--ink);border-color:var(--pencil);font-weight:700;}
+  .tctrl button.stop:hover{color:var(--oxide);border-color:var(--oxide);}
+  body.timing{overflow:hidden;}
+
+  /* ---- auto switch ---- */
+  .sw{
+    display:flex;align-items:center;gap:9px;flex:none;cursor:pointer;
+    background:none;border:1px solid var(--edge);border-radius:2px;padding:0 13px;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--faint);
+  }
+  .sw .track{width:32px;height:18px;border-radius:9px;background:var(--edge);position:relative;transition:background .15s ease;}
+  .sw .track i{position:absolute;top:2.5px;left:2.5px;width:13px;height:13px;border-radius:50%;
+    background:var(--card);transition:transform .15s ease;}
+  .sw[aria-checked="true"]{color:var(--moss);border-color:var(--moss);}
+  .sw[aria-checked="true"] .track{background:var(--moss);}
+  .sw[aria-checked="true"] .track i{transform:translateX(14px);}
+  .sw:focus-visible,.autochip:focus-visible{outline:2px solid var(--oxide);outline-offset:2px;}
+
+  /* ---- banners ---- */
+  .banner{
+    border-radius:2px;padding:11px 13px;font-size:13px;margin-bottom:14px;
+    border-left:3px solid var(--moss);background:var(--card);border-top:1px solid var(--edge);
+    border-right:1px solid var(--edge);border-bottom:1px solid var(--edge);color:var(--ink);
+  }
+  .banner.warn{border-left-color:var(--oxide);}
+  .banner b{font-weight:800;}
+  .banner .eyebrow{display:block;margin-bottom:4px;color:var(--moss);}
+  .banner.warn .eyebrow{color:var(--oxide);}
+
+  /* ---- forms ---- */
+  .fields{padding:14px 16px;border-top:1px solid var(--rule);display:grid;gap:11px;}
+  .fld label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--pencil);margin-bottom:5px;}
+  .fld input,.fld textarea,.fld select{
+    width:100%;background:var(--sunk);border:1px solid var(--edge);border-radius:2px;
+    color:var(--ink);padding:9px 10px;font-size:15px;
+  }
+  .fld textarea{font-family:var(--sans);font-size:14px;resize:vertical;min-height:56px;}
+  .fld input:focus,.fld textarea:focus,.fld select:focus{outline:none;border-color:var(--oxide);}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  .chk{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink);
+       padding:10px 0;border-bottom:1px solid var(--rule);cursor:pointer;}
+  .chk input{width:17px;height:17px;accent-color:var(--moss);}
+
+  .actions{display:grid;grid-template-columns:1fr auto;gap:10px;padding:14px 16px 16px;border-top:1px solid var(--rule);}
+  .btn{
+    border:1px solid var(--edge);background:var(--sunk);color:var(--ink);
+    padding:12px 16px;border-radius:2px;font-size:13.5px;font-weight:700;letter-spacing:0.01em;
+  }
+  .btn:hover{border-color:var(--pencil);}
+  .btn.primary{background:var(--oxide);border-color:var(--oxide);color:#F2E8D5;font-weight:800;}
+  .btn.primary:hover{background:#8A4029;}
+  .btn.ghost{background:none;color:var(--pencil);}
+  .btn.ghost:hover{color:var(--oxide);border-color:var(--oxide);}
+  .btn.skip{
+    background:var(--card);border-color:var(--pencil);color:var(--pencil);
+    font-weight:700;letter-spacing:0.03em;
+  }
+  .btn.skip:hover{background:var(--sunk);color:var(--ink);border-color:var(--ink);}
+  .btn.undo{
+    display:block;width:100%;margin-top:10px;padding:10px 14px;font-size:12.5px;
+    background:var(--oxide);border-color:var(--oxide);color:#F2E8D5;font-weight:800;
+  }
+  .btn.undo:hover{background:#8A4029;}
+  .btn:focus-visible{outline:2px solid var(--oxide);outline-offset:2px;}
+  .banner.skipped{border-left-color:var(--pencil);}
+  .banner.skipped .eyebrow{color:var(--pencil);}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--edge);border-radius:2px;overflow:hidden;}
+  .seg-b{
+    background:var(--sunk);border:0;padding:11px 0;cursor:pointer;color:var(--pencil);
+    font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  }
+  .seg-b+.seg-b{border-left:1px solid var(--edge);}
+  .seg-b[aria-pressed="true"]{background:var(--oxide);color:#F2E8D5;}
+  .seg-b:focus-visible{outline:2px solid var(--ink);outline-offset:-3px;}
+
+  /* ---- lists ---- */
+  .up{margin-top:24px;}
+  .up h3,.sec h3{font-size:10px;font-family:var(--mono);letter-spacing:0.18em;text-transform:uppercase;color:var(--pencil);margin-bottom:9px;font-weight:700;}
+  .line{
+    display:grid;grid-template-columns:76px 1fr auto;gap:10px;align-items:baseline;
+    padding:10px 0;border-bottom:1px solid var(--edge);font-size:13px;
+  }
+  .line .d{font-family:var(--mono);font-size:10.5px;color:var(--pencil);letter-spacing:0.03em;}
+  .line .t{color:var(--ink);}
+  .line .t em{font-style:normal;color:var(--pencil);font-size:11.5px;display:block;font-family:var(--mono);}
+  .line .r{font-family:var(--mono);font-size:10.5px;color:var(--pencil);text-align:right;}
+  .line.missed .t{color:var(--faint);text-decoration:line-through;}
+  .line.missed .r{color:var(--oxide);}
+  .line.head{border-bottom:1.5px solid var(--ink);padding-bottom:6px;}
+
+  .prog-phase{margin:22px 0 8px;display:flex;align-items:baseline;gap:9px;}
+  .prog-phase h4{margin:0;font-size:14px;font-weight:900;letter-spacing:-0.01em;}
+  .prog-phase span{font-family:var(--mono);font-size:9.5px;color:var(--pencil);letter-spacing:0.12em;text-transform:uppercase;}
+
+  .empty{color:var(--pencil);font-size:13px;padding:14px 0;font-family:var(--serif);font-style:italic;}
+
+  .foot{padding:26px 18px 0;display:flex;gap:8px;flex-wrap:wrap;}
+  .foot button{
+    background:none;border:1px solid var(--edge);color:var(--pencil);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;
+    padding:8px 11px;border-radius:2px;
+  }
+  .foot button:hover{color:var(--ink);border-color:var(--pencil);}
+
+  .toast{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:22px;
+    background:var(--oxide);color:#F2E8D5;font-family:var(--mono);font-size:10.5px;
+    letter-spacing:0.11em;text-transform:uppercase;padding:10px 15px;border-radius:2px;
+    opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:70;font-weight:700;
+  }
+  .toast.show{opacity:1;}
+
+  @media (prefers-reduced-motion: reduce){
+    #fb *,.tover,.tover *{transition:none !important;}
+    .tover.closing .tnum{animation:none !important;}
+  }
+  @media (max-width:400px){
+    .specs{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:420px){
+    .card-head h2{font-size:21px;}
+    .set{grid-template-columns:1fr 26px;padding:0 13px;}
+    .set-body{grid-template-columns:46px 22px 1fr;}
+    .set .load{font-size:16px;}
+    .tctrl button{letter-spacing:0.07em;padding:13px 3px;}
+  }
+
+</style>
+
+<div id="fb">
+  <div class="mast">
+    <h1>Finger Block</h1>
+    <div class="count num" id="count">—</div>
+  </div>
+  <div class="rail" id="rail"></div>
+  <div class="railinfo" id="railinfo"></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-today" aria-selected="true">Today</button>
+    <button role="tab" id="tab-program" aria-selected="false">Program</button>
+    <button role="tab" id="tab-history" aria-selected="false">History</button>
+    <button role="tab" id="tab-setup" aria-selected="false">Setup</button>
+  </div>
+  <div class="wrap" id="view"></div>
+  <div class="foot" id="foot"></div>
+  <div class="toast" id="toast"></div>
+</div>
+<div class="tover" id="tover" aria-live="polite">
+  <div class="ttop">
+    <div class="tsession" id="tsession"></div>
+    <button class="autochip" id="t-auto" role="switch" aria-checked="false">
+      <span class="dot"></span><span>Auto</span>
+    </button>
+  </div>
+  <div class="tload" id="tload">—</div>
+  <div class="tset" id="tset">Set 1</div>
+  <div class="tedge" id="tedge">—</div>
+  <div class="tphase" id="tphase">Hold</div>
+  <div class="tnum" id="tnum">0</div>
+  <div class="tprog"><i id="tfill"></i></div>
+  <div class="tctrl">
+    <button id="t-pause">Pause</button>
+    <button id="t-skip">Skip</button>
+    <button id="t-add">+30s</button>
+    <button id="t-stop" class="stop">Close</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================== storage ============================== */
+const KEY = "fingerblock:v1";
+
+// Standalone build: browser localStorage. Data lives on this device only.
+async function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ /* first run, or storage blocked (private browsing) */ }
+  return null;
+}
+let saveTimer = null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    try{ localStorage.setItem(KEY, JSON.stringify(S)); }
+    catch(e){ toast("Save failed — check private browsing is off"); }
+  }, 250);
+}
+
+/* ============================== program ============================== */
+// Block-pull sessions alternate hands with ~60s between hands (~2:20 rest per hand).
+const REST_BLOCK = "Alternate hands · 60s between hands";
+const REST_HANG  = "2.5 min between sets";
+const SEC_BLOCK = 60, SEC_HANG = 150, SEC_TEST = 120;
+
+function B(name, sets, hold, load, cue, edge){
+  return {kind:"block", name, sets, hold, edge:edge||"20mm", grip:"Half crimp",
+          rest:REST_BLOCK, restSec:SEC_BLOCK, load, cue};
+}
+function H(name, sets, hold, pct, cue){
+  return {kind:"hang", name, sets, hold, edge:"20mm", grip:"Half crimp · two arms",
+          rest:REST_HANG, restSec:SEC_HANG, load:{ref:"hangTotal", pct}, cue};
+}
+
+const SESSIONS = [
+  /* ---- PHASE 1 · re-entry ---- */
+  B("Re-entry — density", 4, 20, {rpe:"5"},
+    "This will feel insultingly easy. That's the design. You're rebuilding tissue tolerance, not chasing a training effect."),
+  B("Re-entry — density", 4, 25, {rpe:"5–6"},
+    "Same load as last session if it felt right. Longer hold is the only change."),
+  B("Re-entry — density", 4, 30, {rpe:"6"},
+    "Longest holds of the block. Position quality matters more than load — no fingers rolling open."),
+  B("Re-entry — moderate", 4, 20, {rpe:"7"},
+    "First session with real intent. Still nowhere near max."),
+  B("Ramp to test", 5, 10, {rpe:"8"},
+    "Short and heavy-ish. This is a rehearsal for Friday's test — find the load that leaves ~2s in the tank."),
+  {kind:"test20", name:"TEST — 20mm max", sets:6, hold:10, edge:"20mm", grip:"Half crimp",
+    rest:"2 min per hand · alternate hands", restSec:SEC_BLOCK,
+    cue:"Ramp 3 pulls at ~50/70/85%, then add plates each attempt. Stop when you can't hold 10s with a clean half crimp. Max 6 loaded attempts per hand. Plates must break the floor or it doesn't count."},
+
+  /* ---- PHASE 2 · max block pulls ---- */
+  B("Heavy — 20mm", 4, 8, {ref:"block20", pct:0.85},
+    "Leave about 3s in the tank. If you couldn't have held 11s, the load is too high."),
+  B("Density — 20mm", 3, 25, {ref:"block20", pct:0.55},
+    "Deliberately easy. This is the tissue day and it must not touch your bouldering session."),
+  {kind:"test10", name:"TEST — 10mm max + work", sets:3, hold:8, edge:"10mm", grip:"Half crimp",
+    rest:REST_BLOCK, restSec:SEC_BLOCK,
+    cue:"No 10mm baseline yet. Ramp to a 10s max the same way you did on 20mm, then do 3 working sets at that load. Expect roughly 50–65% of your 20mm number. If skin is thin, run this on 20mm at 90% instead."},
+  B("Heavy — 20mm", 5, 8, {ref:"block20", pct:0.87},
+    "One more set than last week, slightly heavier. ~2s margin."),
+  B("Density — 20mm", 3, 30, {ref:"block20", pct:0.55},
+    "Still easy. Still Wednesday. Still not a hard day."),
+  B("Small edge — 10mm", 4, 8, {ref:"block10", pct:0.85},
+    "Half crimp holds or the set doesn't count. Watch for the index finger unloading.", "10mm"),
+  B("Heavy — 20mm", 5, 8, {ref:"block20", pct:0.90},
+    "Heaviest block-pull day of the program. 1–2s margin. Full warmup, no shortcuts."),
+  B("Density — 20mm", 3, 30, {ref:"block20", pct:0.58},
+    "Last density day. Slight bump, still comfortable."),
+  B("Small edge — 10mm", 5, 8, {ref:"block10", pct:0.88},
+    "Last small-edge day of the block. Then everything changes.", "10mm"),
+
+  /* ---- PHASE 3 · deload + hang calibration ---- */
+  B("Deload", 3, 8, {ref:"block20", pct:0.70},
+    "Three sets and walk away. You've had three weeks of near-max unilateral loading and you're about to change stimulus."),
+  {kind:"testhang", name:"TEST — two-arm max hang", sets:5, hold:10, edge:"20mm", grip:"Half crimp · two arms",
+    rest:"2 min between attempts", restSec:SEC_TEST,
+    cue:"New modality, new baseline — a one-hand block number does not transfer. Ramp, then 10s hangs adding weight each set. Stop at the first set you can't complete cleanly. Five loaded attempts should find it; if you need a sixth, take it — this is the one day worth running past 20 minutes. Sort out the belt and plate logistics today, not in Week 7."},
+  H("Max hangs — intro", 3, 10, 0.80,
+    "First real hang session. Three sets to confirm the number from Wednesday was honest."),
+
+  /* ---- PHASE 4 · max hangs ---- */
+  H("Max hangs", 5, 10, 0.85,
+    "Have the plates racked before you start — this is the tightest session in the program for time."),
+  B("Block pulls — maintenance", 4, 8, {ref:"block20", pct:0.80},
+    "Keeps the unilateral work alive so any left/right gap doesn't re-open."),
+  H("Max hangs", 5, 10, 0.88,
+    "Heaviest hangs so far. If set 4 or 5 fails, that's fine — log it and hold the load next session."),
+  H("Max hangs", 5, 10, 0.88,
+    "Same load as Friday. Consolidating, not pushing."),
+  B("Block pulls — maintenance", 3, 8, {ref:"block20", pct:0.80},
+    "Last working session before retest. Keep it clean and short."),
+  {kind:"retest", name:"RETEST — both", sets:6, hold:10, edge:"20mm + 10mm", grip:"Half crimp",
+    rest:"2 min per hand · alternate hands", restSec:SEC_BLOCK,
+    cue:"Budget 30 minutes today — this is two tests back to back. Same protocol as the baselines: one-hand block max on 20mm, then after 5 minutes the two-arm hang max. Same edge, same grip, same rest, same time of day. Then take 5–7 days off finger-specific training."}
+];
+
+const REENTRY = B("Re-entry — long layoff", 4, 20, {rpe:"5–6"},
+  "You've been out more than two weeks. This session doesn't advance the program — it re-opens the door. Long holds, low load, no ego.");
+
+const PHASES = [
+  {n:1, from:0,  to:5,  label:"Re-entry & baseline"},
+  {n:2, from:6,  to:14, label:"Max block pulls"},
+  {n:3, from:15, to:17, label:"Deload & hang calibration"},
+  {n:4, from:18, to:23, label:"Max hangs"}
+];
+function phaseOf(i){ return PHASES.find(p=>i>=p.from && i<=p.to) || PHASES[3]; }
+
+/* ============================== state ============================== */
+const DEFAULT = {
+  v:1,
+  units:"lb",
+  increment:2.5,
+  tare:0,
+  bodyweight:null,
+  startDate:"2026-07-24",
+  lastSkip:null,
+  snap:null,
+  prep:5,
+  sound:true,
+  autoAdvance:false,
+  keepAwake:true,
+  maxes:{block20L:null, block20R:null, block10L:null, block10R:null, hangTotal:null},
+  baseline:{block20L:null, block20R:null, block10L:null, block10R:null, hangTotal:null},
+  entries:{},   // "YYYY-MM-DD" -> {status, idx, advances, loads, rpe, notes}
+  drafts:{}     // "YYYY-MM-DD" -> [bool,...]
+};
+let S = null;
+let tab = "today";
+let selStation = null;
+
+/* ============================== dates ============================== */
+function ymd(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function parseYmd(s){ const p=s.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function todayYmd(){ return ymd(new Date()); }
+function daysBetween(a,b){ return Math.round((parseYmd(b)-parseYmd(a))/86400000); }
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function pretty(s){ const d=parseYmd(s); return DOW[d.getDay()]+" "+d.getDate()+" "+MON[d.getMonth()]; }
+
+// Mon/Wed/Fri slots from start date.
+function slots(n){
+  const out=[]; const d=parseYmd(S.startDate);
+  let guard=0;
+  while(out.length<n && guard++<800){
+    const w=d.getDay();
+    if(w===1||w===3||w===5) out.push(ymd(d));
+    d.setDate(d.getDate()+1);
+  }
+  return out;
+}
+
+/* ============================== pointers ============================== */
+function doneCount(){
+  return Object.values(S.entries).filter(e=>e.status==="done" && e.advances!==false).length;
+}
+function nextSlot(){
+  const list = slots(120);
+  for(const s of list){ if(!S.entries[s]) return s; }
+  return list[list.length-1];
+}
+function lastDoneDate(){
+  const ds = Object.keys(S.entries).filter(d=>S.entries[d].status==="done").sort();
+  return ds.length ? ds[ds.length-1] : null;
+}
+function overdueSlots(){
+  const t = todayYmd();
+  return slots(120).filter(s=>!S.entries[s] && daysBetween(s,t)>0);
+}
+
+// What to show for the next unlogged slot, plus any regression applied.
+function currentPlan(){
+  const date = nextSlot();
+  const idx  = doneCount();
+  const finished = idx >= SESSIONS.length;
+  const ld = lastDoneDate();
+  // Gap is measured from the last completed session to today (or the slot date, whichever is later).
+  const ref = daysBetween(todayYmd(), date) > 0 ? date : todayYmd();
+  const gap = ld ? daysBetween(ld, ref) : 0;
+
+  let def = finished ? null : SESSIONS[idx];
+  let mult = 1, note = null, advances = true;
+
+  if(!finished && ld){
+    if(gap >= 14 && idx > 0){
+      def = REENTRY; mult = 1; advances = false;
+      note = {kind:"warn", title:"Long layoff", body:
+        "It's been <b>"+gap+" days</b> since your last session. You're getting a re-entry session instead of session "+(idx+1)+
+        ". It won't advance the program — the next one picks up exactly where you left off, at 90%."};
+    } else if(gap >= 7){
+      mult = 0.90;
+      note = {kind:"info", title:"Gap adjustment", body:
+        "<b>"+gap+" days</b> since your last session. Loads below are already reduced to <b>90%</b> of prescription. Full load returns next session."};
+    }
+  }
+  return {date, idx, def, mult, note, advances, finished, gap};
+}
+
+/* ============================== loads ============================== */
+function unit(){ return S.units; }
+const LB_PER_KG = 2.2046226218;
+// Switching units converts every stored weight. The plate increment converts too —
+// the plates on the floor don't change size just because the display does.
+// Floating point can't round-trip cleanly, so we keep an exact snapshot of the
+// values we converted away from and restore it if the switch is reversed.
+function unitSnapshot(){
+  const loads = {};
+  Object.keys(S.entries).forEach(d=>{
+    const e = S.entries[d];
+    if(e && e.loads) loads[d] = {L:e.loads.L, R:e.loads.R};
+  });
+  return {units:S.units, bodyweight:S.bodyweight, tare:S.tare, increment:S.increment,
+          maxes:Object.assign({},S.maxes), baseline:Object.assign({},S.baseline), loads};
+}
+function applySnapshot(sn){
+  S.bodyweight = sn.bodyweight; S.tare = sn.tare; S.increment = sn.increment;
+  S.maxes = Object.assign({}, sn.maxes);
+  S.baseline = Object.assign({}, sn.baseline);
+  Object.keys(sn.loads).forEach(d=>{
+    if(S.entries[d] && S.entries[d].loads){
+      S.entries[d].loads.L = sn.loads[d].L;
+      S.entries[d].loads.R = sn.loads[d].R;
+    }
+  });
+  S.units = sn.units;
+}
+function convertUnits(to){
+  if(to === S.units) return;
+  if(S.snap && S.snap.units === to){ applySnapshot(S.snap); S.snap = null; save(); return; }
+  const snap = unitSnapshot();
+  const f = (to === "lb") ? LB_PER_KG : 1/LB_PER_KG;
+  const cv = v => (v==null || !isFinite(v)) ? v : Math.round(v*f*10000)/10000;
+  S.bodyweight = cv(S.bodyweight);
+  S.tare       = cv(S.tare);
+  S.increment  = cv(S.increment);
+  ["block20L","block20R","block10L","block10R","hangTotal"].forEach(k=>{
+    S.maxes[k]    = cv(S.maxes[k]);
+    S.baseline[k] = cv(S.baseline[k]);
+  });
+  Object.keys(S.entries).forEach(d=>{
+    const e = S.entries[d];
+    if(e && e.loads){ e.loads.L = cv(e.loads.L); e.loads.R = cv(e.loads.R); }
+  });
+  S.units = to;
+  S.snap = snap;
+  save();
+}
+
+function roundInc(x){
+  const i = Number(S.increment) || 2.5;
+  return Math.round(x/i)*i;
+}
+function fmt(x){
+  if(x===null||x===undefined||!isFinite(x)) return "—";
+  const r = Math.round(x*100)/100;
+  return (r%1===0) ? String(r) : r.toFixed(2).replace(/0$/,"");
+}
+// Returns {L, R, sub} for a session definition, already rounded to real plates.
+function loadsFor(def, mult){
+  const L = def.load;
+  if(!L) return null;
+  if(L.rpe) return {L:"RPE "+L.rpe, R:"RPE "+L.rpe, rpe:true};
+  const m = S.maxes;
+  if(L.ref==="hangTotal"){
+    if(!m.hangTotal || !S.bodyweight) return {L:"set on test day", R:"set on test day", rpe:true};
+    const total = m.hangTotal * L.pct * mult;
+    const added = roundInc(total - S.bodyweight);
+    return {L:fmt(added), R:fmt(added), added:true,
+            sub:"added weight · total "+fmt(roundInc(total))+" "+unit()+" incl. bodyweight"};
+  }
+  const kl = L.ref+"L", kr = L.ref+"R";
+  if(m[kl]==null || m[kr]==null) return {L:"set on test day", R:"set on test day", rpe:true};
+  const l = roundInc(m[kl]*L.pct*mult), r = roundInc(m[kr]*L.pct*mult);
+  const sub = Number(S.tare) > 0
+    ? "plates to add: "+fmt(l-S.tare)+" / "+fmt(r-S.tare)+" "+unit()+" (hardware "+fmt(S.tare)+")"
+    : null;
+  return {L:fmt(l), R:fmt(r), sub};
+}
+
+/* ============================== render ============================== */
+const $ = id=>document.getElementById(id);
+
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1900);
+}
+
+/* ============================== timer ============================== */
+let AC = null;
+function audio(){
+  if(!S.sound) return null;
+  try{
+    if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==="suspended") AC.resume();
+    return AC;
+  }catch(e){ return null; }
+}
+function tone(freq, ms, gain){
+  const ac = audio(); if(!ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, ac.currentTime);
+  g.gain.linearRampToValueAtTime(gain||0.25, ac.currentTime+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+ms/1000);
+  o.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + ms/1000 + 0.03);
+}
+function noiseBuf(ac){
+  if(ac._noise) return ac._noise;
+  const n = Math.floor(ac.sampleRate*0.05);
+  const b = ac.createBuffer(1,n,ac.sampleRate);
+  const d = b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i] = Math.random()*2-1;
+  ac._noise = b; return b;
+}
+// A real clock tick is a transient, not a tone — short bandpassed noise gets it.
+function clickTick(high){
+  const ac = audio(); if(!ac) return;
+  const src = ac.createBufferSource(); src.buffer = noiseBuf(ac);
+  const bp = ac.createBiquadFilter(); bp.type="bandpass";
+  bp.frequency.value = high ? 2700 : 1850; bp.Q.value = 7;
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.0001, ac.currentTime);
+  g.gain.linearRampToValueAtTime(0.55, ac.currentTime+0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+0.05);
+  src.connect(bp); bp.connect(g); g.connect(ac.destination);
+  src.start(); src.stop(ac.currentTime+0.07);
+}
+function buzz(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
+const CUE = {
+  count:  ()=>{ tone(660,90,0.18); buzz(35); },
+  go:     ()=>{ tone(880,420,0.34); buzz([0,130]); },
+  release:()=>{ tone(430,520,0.30); buzz([0,90,60,90]); },
+  rest:   ()=>{ tone(320,220,0.18); },
+  done:   ()=>{ tone(660,140,0.26); setTimeout(()=>tone(880,340,0.30),170); buzz([0,110,70,190]); },
+  tick:   (hi)=>{ clickTick(hi); buzz(26); }
+};
+
+let wake = null;
+async function wakeOn(){
+  if(!S.keepAwake) return;
+  try{ if("wakeLock" in navigator && !wake) wake = await navigator.wakeLock.request("screen"); }catch(e){}
+}
+function wakeOff(){ try{ if(wake){ wake.release(); wake=null; } }catch(e){} }
+
+const T = {on:false, phase:null, i:0, endsAt:0, dur:0, paused:false, left:0, tick:null, lastBeep:-1, ready:null, closing:false};
+
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState==="visible" && T.on) wakeOn();
+});
+
+function ctxRows(){
+  const p = currentPlan();
+  if(!p.def) return {rows:[], def:null, date:null, loads:null};
+  const lo = loadsFor(p.def, p.mult);
+  return {rows: rowsFor(p.def, lo), def:p.def, date:p.date, loads:lo};
+}
+function phaseDur(def, phase){
+  if(phase==="prep") return Math.max(0, Number(S.prep)||0)*1000;
+  if(phase==="hold") return def.hold*1000;
+  return (def.restSec||60)*1000;
+}
+function startPhase(i, phase){
+  const c = ctxRows();
+  if(!c.def) return;
+  if(i >= c.rows.length){ finishStack(); return; }
+  if(phase==="prep" && phaseDur(c.def,"prep") <= 0) phase = "hold";
+  T.on=true; T.i=i; T.phase=phase; T.paused=false; T.lastBeep=-1; T.ready=null;
+  setClosing(false);
+  T.dur = phaseDur(c.def, phase);
+  T.endsAt = performance.now() + T.dur;
+  if(phase==="hold") CUE.go(); else if(phase==="rest") CUE.rest();
+  document.body.classList.add("timing");
+  $("tover").classList.add("up");
+  $("t-pause").textContent = "Pause"; $("t-pause").classList.remove("pause");
+  wakeOn();
+  if(!T.tick) T.tick = setInterval(tickTimer, 100);
+  paintStack(); paintTimer();
+}
+function stopTimer(){
+  T.on=false; T.phase=null; T.paused=false;
+  setClosing(false);
+  clearInterval(T.tick); T.tick=null;
+  document.body.classList.remove("timing");
+  $("tover").classList.remove("up");
+  wakeOff();
+  paintStack();
+}
+function finishStack(){
+  stopTimer(); CUE.done();
+  toast("Sets done — now log the session");
+}
+function setClosing(on){
+  if(on === T.closing) return;
+  T.closing = on;
+  $("tover").classList.toggle("closing", on);
+}
+function tickTimer(){
+  if(!T.on || T.paused) return;
+  const left = T.endsAt - performance.now();
+  if(left <= 0){ advance(); return; }
+  const secs = Math.ceil(left/1000);
+  if(T.phase==="rest"){
+    // last five seconds: red, pulsing, ticking clock
+    setClosing(left <= 5000);
+    if(secs<=5 && secs>0 && secs!==T.lastBeep){ T.lastBeep=secs; CUE.tick(secs%2===1); }
+  } else {
+    if(secs<=3 && secs>0 && secs!==T.lastBeep){ T.lastBeep=secs; CUE.count(); }
+  }
+  paintTimer(left);
+}
+function advance(){
+  const c = ctxRows();
+  if(!c.def){ stopTimer(); return; }
+  if(T.phase==="prep"){ startPhase(T.i, "hold"); return; }
+  if(T.phase==="hold"){
+    CUE.release();
+    const d = S.drafts[c.date] || (S.drafts[c.date]=[]);
+    d[T.i] = true; save();
+    if(T.i+1 >= c.rows.length){ finishStack(); return; }
+    startPhase(T.i, "rest"); return;
+  }
+  if(S.autoAdvance){ startPhase(T.i+1, "prep"); return; }
+  T.ready = T.i+1;
+  stopTimer();
+  CUE.go();
+  toast("Rest done — tap your next set");
+  focusNext();
+}
+function mmss(ms){
+  const s = Math.max(0, Math.ceil(ms/1000));
+  const m = Math.floor(s/60);
+  return m>0 ? m+":"+String(s%60).padStart(2,"0") : String(s);
+}
+function paintTimer(leftMs){
+  if(!T.on) return;
+  const bar = $("tover");
+  const left = leftMs!=null ? leftMs : (T.paused ? T.left : T.endsAt-performance.now());
+  const c = ctxRows();
+  const def = c.def || {};
+  const resting = (T.phase==="rest");
+  // while resting, everything above the clock describes the set you're about to do
+  const row = c.rows[resting ? T.i+1 : T.i] || {};
+
+  bar.classList.remove("rest","prep");
+  let label;
+  if(T.phase==="prep"){ bar.classList.add("prep"); label="Get set"; }
+  else if(T.phase==="hold"){ label="Hold"; }
+  else { bar.classList.add("rest"); label="Rest"; }
+
+  const hand = row.hand==="L" ? "Left hand" : row.hand==="R" ? "Right hand" : "Both hands";
+  $("tsession").textContent = def.name || "";
+  $("tset").innerHTML = (resting ? '<em>Next — </em>' : '') + "Set " + (row.n||1) + ": " + hand;
+  const noUnit = c.loads && c.loads.rpe;
+  $("tload").innerHTML = (row.load!=null ? row.load : "—") + (noUnit ? "" : ' <small>'+unit()+'</small>');
+  $("tedge").textContent = (def.edge||"") + " · " + (def.grip||"").toLowerCase();
+  $("tphase").textContent = T.paused ? label+" · paused" : label;
+  $("tnum").textContent = mmss(left);
+  $("t-auto").setAttribute("aria-checked", String(!!S.autoAdvance));
+
+  const pct = Math.max(0, Math.min(100, (1 - left/T.dur)*100));
+  $("tfill").style.width = pct+"%";
+  const af = document.querySelector('#stack .set[data-i="'+T.i+'"] .fill');
+  if(af) af.style.width = pct+"%";
+}
+function paintStack(){
+  const stack = $("stack"); if(!stack) return;
+  const c = ctxRows();
+  const draft = (c.date && S.drafts[c.date]) || [];
+  stack.querySelectorAll(".set").forEach(el=>{
+    const i = +el.dataset.i;
+    el.dataset.on = draft[i] ? "true" : "false";
+    const active = T.on && i===T.i;
+    el.classList.toggle("active", active);
+    el.classList.toggle("resting", active && T.phase==="rest");
+    el.classList.toggle("next", !T.on && T.ready===i && !draft[i]);
+    const f = el.querySelector(".fill");
+    if(f && !active) f.style.width = "0";
+  });
+}
+function focusNext(){
+  if(T.ready==null) return;
+  const el = document.querySelector('#stack .set[data-i="'+T.ready+'"]');
+  if(el) el.scrollIntoView({block:"center", behavior:"smooth"});
+}
+function setAuto(v){
+  S.autoAdvance = !!v; save();
+  ["btn-auto","t-auto"].forEach(id=>{
+    const el = $(id); if(el) el.setAttribute("aria-checked", String(S.autoAdvance));
+  });
+  toast(S.autoAdvance ? "Auto — sets chain by themselves" : "Manual — tap each set");
+}
+function wireTimer(){
+  $("t-auto").onclick = ()=> setAuto(!S.autoAdvance);
+  $("t-pause").onclick = ()=>{
+    if(!T.on) return;
+    if(T.paused){ T.endsAt = performance.now()+T.left; T.paused=false;
+                  $("t-pause").textContent="Pause"; $("t-pause").classList.remove("pause"); }
+    else { T.left = T.endsAt - performance.now(); T.paused=true;
+           $("t-pause").textContent="Resume"; $("t-pause").classList.add("pause"); }
+    paintTimer();
+  };
+  $("t-skip").onclick  = ()=>{ if(T.on) advance(); };
+  $("t-add").onclick   = ()=>{ if(!T.on) return; T.endsAt += 30000; T.dur += 30000; paintTimer(); };
+  $("t-stop").onclick  = ()=>{ stopTimer(); };
+}
+
+function renderRail(){
+  const done = doneCount();
+  const missCount = Object.values(S.entries).filter(e=>e.status==="missed").length;
+  const N = SESSIONS.length, W = 320, H = 64, pad = 11;
+  // the block drawn as a route: a dashed line with a station at every session
+  const pts = [];
+  for(let i=0;i<N;i++){
+    pts.push([ pad + i*(W-pad*2)/(N-1),
+               H/2 - Math.sin(i*0.62)*18 - Math.sin(i*1.73)*4.2 ]);
+  }
+  let d = "M"+pts[0][0].toFixed(1)+" "+pts[0][1].toFixed(1);
+  for(let i=0;i<N-1;i++){
+    const a=pts[i], b=pts[i+1], cx=((a[0]+b[0])/2).toFixed(1);
+    d += " C"+cx+" "+a[1].toFixed(1)+","+cx+" "+b[1].toFixed(1)
+       + ","+b[0].toFixed(1)+" "+b[1].toFixed(1);
+  }
+  const sched = sessionSchedule();
+  let dots = "";
+  pts.forEach((p,i)=>{
+    const x = p[0].toFixed(1), y = p[1].toFixed(1);
+    const phaseStart = PHASES.some(ph=>ph.from===i);
+    const sc = sched[i] || {};
+    let mark;
+    if(i < done){
+      mark = '<circle cx="'+x+'" cy="'+y+'" r="'+(phaseStart?4.4:3.4)+'" fill="var(--moss)"/>';
+    } else if(i === done){
+      mark = '<circle cx="'+x+'" cy="'+y+'" r="7.2" fill="none" stroke="var(--oxide)" stroke-width="2"/>'
+           + '<circle cx="'+x+'" cy="'+y+'" r="2.6" fill="var(--oxide)"/>';
+    } else {
+      mark = '<circle cx="'+x+'" cy="'+y+'" r="'+(phaseStart?3.5:2.6)+'" fill="var(--paper)" '
+           + 'stroke="var(--edge)" stroke-width="1.4"/>';
+    }
+    const sel = (selStation===i)
+      ? '<circle cx="'+x+'" cy="'+y+'" r="10.5" fill="none" stroke="var(--ink)" stroke-width="1.4"/>' : '';
+    dots += '<g class="stn" data-i="'+i+'">'
+          +   '<title>Session '+(i+1)+' — '+SESSIONS[i].name
+          +   (sc.date ? ' · '+pretty(sc.date) : '')+'</title>'
+          +   '<circle cx="'+x+'" cy="'+y+'" r="9.5" fill="transparent"/>'
+          +   mark + sel
+          + '</g>';
+  });
+  $("rail").innerHTML =
+    '<svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true">'
+    + '<path d="'+d+'" fill="none" stroke="var(--oxide)" stroke-width="1.7" '
+    +   'stroke-dasharray="1.5 5.5" stroke-linecap="round" opacity=".7"/>'
+    + dots
+    + '</svg>';
+  $("count").textContent = Math.min(done+1,SESSIONS.length)+" / "+SESSIONS.length +
+    (missCount ? "  ·  "+missCount+" skipped" : "");
+  $("rail").querySelectorAll("g.stn").forEach(g=>{
+    g.onclick = ()=>{
+      const i = +g.dataset.i;
+      selStation = (selStation===i) ? null : i;
+      renderRail();
+    };
+  });
+  renderStation();
+}
+
+// Which calendar day each session lands on: completed ones keep the date they were
+// logged, the rest fall onto the remaining Mon/Wed/Fri slots in order.
+function sessionSchedule(){
+  const out = new Array(SESSIONS.length).fill(null);
+  let i = 0;
+  Object.keys(S.entries).sort().forEach(d=>{
+    const e = S.entries[d];
+    if(e.status==="done" && e.advances!==false){
+      if(i < out.length) out[i] = {date:d, status:"done", entry:e};
+      i++;
+    }
+  });
+  const free = slots(200).filter(d=>!S.entries[d]);
+  let k = 0;
+  for(let j=i;j<out.length;j++){
+    out[j] = {date: free[k++]||null, status:(j===i ? "current" : "upcoming")};
+  }
+  return out;
+}
+
+function renderStation(){
+  const box = $("railinfo");
+  if(!box) return;
+  if(selStation==null || !SESSIONS[selStation]){ box.innerHTML=""; box.className="railinfo"; return; }
+  const i = selStation, def = SESSIONS[i], ph = phaseOf(i);
+  const sc = sessionSchedule()[i] || {};
+  const L = def.load;
+  const load = L ? (L.rpe ? "RPE "+L.rpe : Math.round(L.pct*100)+"% of max") : "test day";
+  let status;
+  if(sc.status==="done"){
+    const e = sc.entry || {}, bits = [];
+    if(e.loads && (e.loads.L!=null || e.loads.R!=null))
+      bits.push("L "+fmt(e.loads.L)+" / R "+fmt(e.loads.R)+" "+unit());
+    if(e.rpe) bits.push("RPE "+e.rpe);
+    status = "Logged "+pretty(sc.date)+(bits.length ? " · "+bits.join(" · ") : "");
+  } else if(sc.status==="current"){
+    status = "Up next · "+(sc.date ? pretty(sc.date) : "unscheduled");
+  } else {
+    status = "Planned · "+(sc.date ? pretty(sc.date) : "—");
+  }
+  box.className = "railinfo on"+(sc.status==="done" ? " done" : "");
+  box.innerHTML =
+      '<button class="stn-x" id="stn-close" aria-label="Close">×</button>'
+    + '<div class="stn-n">Session '+(i+1)+' · Phase '+ph.n+' · '+ph.label+'</div>'
+    + '<div class="stn-t">'+def.name+'</div>'
+    + '<div class="stn-s">'+def.edge+' · '+def.sets+(def.kind==="hang" ? " sets" : " / hand")
+    +   ' × '+def.hold+'s · '+load+'</div>'
+    + '<div class="stn-st">'+status+'</div>'
+    + ((sc.status==="done" && sc.entry && sc.entry.notes)
+        ? '<div class="stn-note">'+esc(sc.entry.notes)+'</div>' : '');
+  $("stn-close").onclick = ()=>{ selStation=null; renderRail(); };
+}
+function estMin(def){
+  const rows = (def.kind==="hang") ? def.sets : def.sets*2;
+  const prep = Math.max(0, Number(S.prep)||0);
+  const secs = rows*def.hold + Math.max(0,rows-1)*(def.restSec||60) + rows*prep;
+  return Math.round(secs/60);
+}
+function restLabel(def){
+  const r = def.restSec || 60;
+  if(r >= 90){ const m = r/60; return (m % 1 ? m.toFixed(1) : m) + " min"; }
+  return r + "s";
+}
+function specLine(def){
+  const cells = [
+    ["Edge",  def.edge],
+    ["Grip",  def.kind==="hang" ? "Half crimp <small>2 arms</small>" : "Half crimp"],
+    ["Hold",  def.hold + "s"],
+    ["Sets",  def.kind==="hang" ? def.sets + " <small>total</small>"
+                                : def.sets + " <small>/ hand</small>"],
+    ["Rest",  restLabel(def)],
+    ["Time",  "≈" + estMin(def) + " <small>min</small>"]
+  ];
+  return '<div class="specs">' + cells.map(c=>
+    '<div><div class="k">'+c[0]+'</div><div class="v">'+c[1]+'</div></div>').join("") + '</div>';
+}
+
+function rowsFor(def, loads){
+  const rows = [];
+  const twoHanded = (def.kind==="hang");
+  for(let i=0;i<def.sets;i++){
+    if(twoHanded){
+      rows.push({n:i+1, lbl:"Set "+(i+1), hand:"", load:loads?loads.L:"—"});
+    }else{
+      rows.push({n:i+1, lbl:"Set "+(i+1), hand:"L", load:loads?loads.L:"—"});
+      rows.push({n:i+1, lbl:"",           hand:"R", load:loads?loads.R:"—"});
+    }
+  }
+  return rows;
+}
+
+function renderStack(def, loads, date){
+  const draft = S.drafts[date] || [];
+  const rows = rowsFor(def, loads);
+  const u = (loads && loads.rpe) ? "" : " <small>"+unit()+"</small>";
+  let h='<div class="startbar">'
+    + '<button class="btn primary" id="btn-start">Start timer</button>'
+    + '<button class="sw" id="btn-auto" role="switch" aria-checked="'+(S.autoAdvance?"true":"false")+'">'
+    +   '<span class="track"><i></i></span><span>Auto</span>'
+    + '</button>'
+    + '</div>';
+  h+='<div class="stack" id="stack">';
+  rows.forEach((r,i)=>{
+    h += '<div class="set" data-i="'+i+'" data-on="'+(draft[i]?"true":"false")+'">'
+       +   '<i class="fill"></i>'
+       +   '<button class="set-body" data-i="'+i+'" aria-label="Start from '+(r.lbl||"set")+' '+r.hand+'">'
+       +     '<span class="lbl">'+r.lbl+'</span>'
+       +     '<span class="hand">'+r.hand+'</span>'
+       +     '<span class="load">'+r.load+u+'</span>'
+       +   '</button>'
+       +   '<button class="tick" data-i="'+i+'" aria-label="Mark set done">✓</button>'
+       + '</div>';
+  });
+  h+='</div>';
+  h+='<div class="rest-note" style="display:flex;justify-content:space-between;align-items:center;gap:10px">'
+    + '<span>'+def.rest+' · tap a row to start there</span>'
+    + '<button id="btn-clear" style="background:none;border:0;padding:0;color:var(--dim);font:inherit;'
+    + 'cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap">Clear</button>'
+    + '</div>';
+  if(loads && loads.sub) h+='<div class="rest-note" style="border-top:0;padding-top:0;color:var(--beech-dim)">'+loads.sub+'</div>';
+  return h;
+}
+
+function testFields(kind){
+  const u = unit();
+  if(kind==="test20") return `
+    <div class="fld"><label>20mm one-hand max — 10s hold, ${u}</label></div>
+    <div class="duo">
+      <div class="fld"><label>Left</label><input type="number" step="any" id="f_b20L" placeholder="0"></div>
+      <div class="fld"><label>Right</label><input type="number" step="any" id="f_b20R" placeholder="0"></div>
+    </div>
+    <div class="fld"><label>Bodyweight (${u}) — needed later for hang loads</label><input type="number" step="any" id="f_bw" placeholder="0"></div>`;
+  if(kind==="test10") return `
+    <div class="fld"><label>10mm one-hand max — 10s hold, ${u}</label></div>
+    <div class="duo">
+      <div class="fld"><label>Left</label><input type="number" step="any" id="f_b10L" placeholder="0"></div>
+      <div class="fld"><label>Right</label><input type="number" step="any" id="f_b10R" placeholder="0"></div>
+    </div>`;
+  if(kind==="testhang") return `
+    <div class="duo">
+      <div class="fld"><label>Bodyweight (${u})</label><input type="number" step="any" id="f_bw" placeholder="0"></div>
+      <div class="fld"><label>Max added weight (${u})</label><input type="number" step="any" id="f_added" placeholder="0"></div>
+    </div>`;
+  if(kind==="retest") return `
+    <div class="duo">
+      <div class="fld"><label>20mm block — left (${u})</label><input type="number" step="any" id="f_b20L"></div>
+      <div class="fld"><label>20mm block — right (${u})</label><input type="number" step="any" id="f_b20R"></div>
+    </div>
+    <div class="duo">
+      <div class="fld"><label>Bodyweight (${u})</label><input type="number" step="any" id="f_bw"></div>
+      <div class="fld"><label>Hang — max added (${u})</label><input type="number" step="any" id="f_added"></div>
+    </div>`;
+  return "";
+}
+
+function renderToday(){
+  const p = currentPlan();
+  let h = "";
+
+  if(p.finished){
+    const b = S.baseline, m = S.maxes;
+    const delta=(a,z)=> (a&&z) ? (((z-a)/a*100>=0?"+":"")+((z-a)/a*100).toFixed(1)+"%") : "—";
+    h += '<div class="banner"><span class="eyebrow">Block complete</span>'
+      +  'All 24 sessions logged. Take 5–7 days off finger-specific training before starting anything new.</div>';
+    h += '<div class="sec"><h3>Baseline → final</h3>'
+      +  '<div class="line head"><span class="d">Test</span><span class="t">Start → End</span><span class="r">Change</span></div>'
+      +  ['block20L','block20R','block10L','block10R','hangTotal'].map(k=>
+           '<div class="line"><span class="d">'+k.replace("block","").replace("Total","")+'</span>'
+           +'<span class="t num">'+fmt(b[k])+' → '+fmt(m[k])+' '+unit()+'</span>'
+           +'<span class="r">'+delta(b[k],m[k])+'</span></div>').join("")
+      +  '</div>';
+    return h;
+  }
+
+  const def = p.def;
+  const loads = loadsFor(def, p.mult);
+  const ph = phaseOf(p.idx);
+  const t = todayYmd();
+  const dayGap = daysBetween(t, p.date);
+
+  if(S.lastSkip && S.entries[S.lastSkip] && S.entries[S.lastSkip].status==="missed"){
+    h += '<div class="banner skipped">'
+      +  '<span class="eyebrow">Day skipped</span>'
+      +  '<b>'+pretty(S.lastSkip)+'</b> was skipped. Everything shifted to the next '
+      +  'Mon/Wed/Fri — nothing was dropped from the program.'
+      +  '<button class="btn undo" id="btn-undo-skip">Undo skip</button>'
+      +  '</div>';
+  }
+  if(p.note){
+    h += '<div class="banner '+(p.note.kind==="warn"?"warn":"")+'">'
+      +  '<span class="eyebrow">'+p.note.title+'</span>'+p.note.body+'</div>';
+  }
+  const od = overdueSlots();
+  if(od.length && !p.note){
+    h += '<div class="banner warn"><span class="eyebrow">Overdue</span>'
+      +  'Scheduled for <b>'+pretty(p.date)+'</b> and not logged. Log it now, or mark it missed — '
+      +  'missing a session shifts the program forward, it never skips content.</div>';
+  }
+  if(dayGap > 0 && !od.length){
+    h += '<div class="banner"><span class="eyebrow">Next up</span>'
+      +  'Not scheduled until <b>'+pretty(p.date)+'</b>. You can still log it early if you\'re training today.</div>';
+  }
+
+  h += '<div class="card">'
+    +   '<div class="card-head">'
+    +     '<div class="row1"><h2>'+def.name+'</h2>'
+    +     '<span class="grade" title="Phase '+ph.n+'">P'+ph.n+'</span></div>'
+    +     '<div class="eyebrow">'+pretty(p.date)+' · Session '+(p.advances?(p.idx+1):"—")+' · '+ph.label+'</div>'
+    +     specLine(def)
+    +     '<div class="cue">'+def.cue+'</div>'
+    +   '</div>'
+    +   renderStack(def, loads, p.date)
+    +   '<div class="fields">'
+    +     testFields(def.kind)
+    +     (def.kind==="block"||def.kind==="hang" ? `
+        <div class="duo">
+          <div class="fld"><label>Load used — L (${unit()})</label><input type="number" step="any" id="f_useL"></div>
+          <div class="fld"><label>Load used — R (${unit()})</label><input type="number" step="any" id="f_useR"></div>
+        </div>` : "")
+    +     '<div class="fld"><label>How it felt (RPE 1–10)</label><input type="number" step="any" min="1" max="10" id="f_rpe"></div>'
+    +     '<div class="fld"><label>Notes — skin, tweaks, how the bouldering went after</label><textarea id="f_notes" placeholder="The last part is the real read on whether the dose is right."></textarea></div>'
+    +   '</div>'
+    +   '<div class="actions">'
+    +     '<button class="btn primary" id="btn-done">Log session</button>'
+    +     '<button class="btn skip" id="btn-miss">Skip day</button>'
+    +   '</div>'
+    + '</div>';
+
+  // upcoming
+  const list = slots(120).filter(s=>!S.entries[s]).slice(1,4);
+  if(list.length){
+    h += '<div class="up"><h3>Coming up</h3>';
+    list.forEach((s,i)=>{
+      const j = p.idx + (p.advances?1:0) + i;
+      if(j>=SESSIONS.length) return;
+      const d = SESSIONS[j];
+      h += '<div class="line"><span class="d">'+pretty(s)+'</span>'
+        +  '<span class="t">'+d.name+'<em>'+d.edge+' · '+d.sets+'×'+d.hold+'s</em></span>'
+        +  '<span class="r">'+(j+1)+'</span></div>';
+    });
+    h += '</div>';
+  }
+  return h;
+}
+
+function renderProgram(){
+  const done = doneCount();
+  let h = '<div class="sec">';
+  PHASES.forEach(p=>{
+    h += '<div class="prog-phase"><h4>Phase '+p.n+'</h4><span>'+p.label+'</span></div>';
+    for(let i=p.from;i<=p.to;i++){
+      const d = SESSIONS[i];
+      const L = d.load;
+      let load = "—";
+      if(L && L.rpe) load = "RPE "+L.rpe;
+      else if(L) load = Math.round(L.pct*100)+"%";
+      else load = "test";
+      const cls = i<done ? "" : (i===done ? "" : "");
+      h += '<div class="line '+cls+'"><span class="d">'+(i+1)+(i<done?" ✓":"")+'</span>'
+        +  '<span class="t">'+d.name+'<em>'+d.edge+' · '+d.sets+(d.kind==="hang"?" sets":" /hand")+' × '+d.hold+'s</em></span>'
+        +  '<span class="r">'+load+'</span></div>';
+    }
+  });
+  h += '</div>';
+  h += '<div class="up"><h3>Current maxes</h3>';
+  const m=S.maxes;
+  [["20mm left","block20L"],["20mm right","block20R"],["10mm left","block10L"],["10mm right","block10R"],["Hang total (BW+added)","hangTotal"]]
+    .forEach(([lbl,k])=>{
+      h += '<div class="line"><span class="d"></span><span class="t">'+lbl+'</span>'
+        +  '<span class="r">'+(m[k]!=null?fmt(m[k])+" "+unit():"not tested")+'</span></div>';
+    });
+  if(m.block20L!=null && m.block20R!=null){
+    const diff = Math.abs(m.block20L-m.block20R)/Math.max(m.block20L,m.block20R)*100;
+    if(diff>8) h += '<div class="banner warn" style="margin-top:14px"><span class="eyebrow">Asymmetry</span>'
+      + 'Your hands differ by <b>'+diff.toFixed(1)+'%</b> on 20mm. Add one extra set on the weaker side for the rest of the block.</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function renderHistory(){
+  const ds = Object.keys(S.entries).sort().reverse();
+  if(!ds.length) return '<div class="empty">Nothing logged yet. Your first session is Friday 24 Jul.</div>';
+  let h = '<div class="sec"><h3>Log</h3>';
+  ds.forEach(d=>{
+    const e = S.entries[d];
+    const nm = e.status==="missed" ? (SESSIONS[e.idx] ? SESSIONS[e.idx].name : "Session") : (e.name||"Session");
+    const detail = e.status==="missed" ? "skipped"
+      : [ e.loads ? ("L "+fmt(e.loads.L)+" / R "+fmt(e.loads.R)+" "+unit()) : null,
+          e.rpe ? ("RPE "+e.rpe) : null ].filter(Boolean).join(" · ");
+    h += '<div class="line '+(e.status==="missed"?"missed":"")+'">'
+      +  '<span class="d">'+pretty(d)+'</span>'
+      +  '<span class="t">'+nm+(detail?'<em>'+detail+'</em>':'')+(e.notes?'<em style="color:var(--dust)">'+esc(e.notes)+'</em>':'')+'</span>'
+      +  '<span class="r">'+(e.status==="missed"?"—":(e.advances===false?"re-entry":"#"+(e.idx+1)))+'</span></div>';
+  });
+  h += '</div>';
+  const total = ds.length, missed = ds.filter(d=>S.entries[d].status==="missed").length;
+  h += '<div class="up"><h3>Adherence</h3><div class="line"><span class="d"></span>'
+    + '<span class="t">'+(total-missed)+' completed, '+missed+' skipped</span>'
+    + '<span class="r">'+Math.round((total-missed)/total*100)+'%</span></div>';
+  const recent = slots(120).filter(s=>S.entries[s]).slice(-6);
+  const rm = recent.filter(s=>S.entries[s].status==="missed").length;
+  if(rm>=3) h += '<div class="banner warn" style="margin-top:14px"><span class="eyebrow">Pattern</span>'
+    + 'You\'ve skipped <b>'+rm+' of the last 6</b>. Three sessions a week may be the wrong dose right now — '
+    + 'two quality sessions beats three you resent. The program runs on completed sessions, so dropping to Mon/Thu just stretches it.</div>';
+  h += '</div>';
+  return h;
+}
+
+function renderSetup(){
+  return `
+  <div class="sec">
+    <div class="fld"><label>Start date (first session)</label><input type="date" id="s_start" value="${S.startDate}"></div>
+    <div class="fld" style="margin-top:14px">
+      <label>Units — converts everything already logged</label>
+      <div class="seg" role="group" aria-label="Weight units">
+        <button class="seg-b" data-u="lb" aria-pressed="${S.units==="lb"}">lb</button>
+        <button class="seg-b" data-u="kg" aria-pressed="${S.units==="kg"}">kg</button>
+      </div>
+    </div>
+    <div class="fld" style="margin-top:11px">
+      <label>Smallest plate step (${S.units})</label>
+      <input type="number" step="any" id="s_inc" value="${S.increment}">
+    </div>
+    <div class="duo" style="margin-top:11px">
+      <div class="fld"><label>Hardware tare (${S.units})</label><input type="number" step="any" id="s_tare" value="${S.tare}"></div>
+      <div class="fld"><label>Bodyweight (${S.units})</label><input type="number" step="any" id="s_bw" value="${S.bodyweight!=null?S.bodyweight:""}"></div>
+    </div>
+    <div class="cue" style="border:0;padding-top:12px">
+      Tare is the weight of your pin, strap and carabiner. Every prescribed number below is
+      <b>total load lifted</b>, so the tool subtracts tare to tell you what plates to actually add.
+      Weigh the hardware once and you never think about it again.
+    </div>
+    <div class="prog-phase" style="margin-top:22px"><h4>Timer</h4><span>Hold and rest cues</span></div>
+    <div class="duo">
+      <div class="fld"><label>Get-set countdown (s)</label><input type="number" step="1" min="0" id="s_prep" value="${S.prep}"></div>
+      <div class="fld"><label>Rest between sets</label><input value="from the program" disabled style="opacity:.5"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="s_sound" ${S.sound?"checked":""}> Beeps and vibration</label>
+    <label class="chk"><input type="checkbox" id="s_awake" ${S.keepAwake?"checked":""}> Keep the screen awake while timing</label>
+    <div class="cue" style="border:0;padding-top:10px">
+      Tap any row to start there. The countdown takes over the screen for get-set → hold → rest
+      and ticks the set off when the hold ends. The last five seconds of rest go red and tick like
+      a clock. <b>Auto</b> — the switch on the session card, or the chip in the top corner while
+      the clock runs — chains every set to the end without you touching the screen; with it off,
+      the countdown clears after each rest so you tap the next set yourself. Pause works in both.
+    </div>
+    <div class="actions" style="padding-left:0;padding-right:0;border-top:1px solid var(--line-soft);margin-top:6px">
+      <button class="btn primary" id="btn-save-setup">Save settings</button>
+    </div>
+  </div>
+  <div class="up">
+    <h3>Override maxes</h3>
+    <div class="duo">
+      <div class="fld"><label>20mm L</label><input type="number" step="any" id="m_b20L" value="${S.maxes.block20L??""}"></div>
+      <div class="fld"><label>20mm R</label><input type="number" step="any" id="m_b20R" value="${S.maxes.block20R??""}"></div>
+    </div>
+    <div class="duo" style="margin-top:11px">
+      <div class="fld"><label>10mm L</label><input type="number" step="any" id="m_b10L" value="${S.maxes.block10L??""}"></div>
+      <div class="fld"><label>10mm R</label><input type="number" step="any" id="m_b10R" value="${S.maxes.block10R??""}"></div>
+    </div>
+    <div class="fld" style="margin-top:11px"><label>Hang total (bodyweight + added)</label><input type="number" step="any" id="m_hang" value="${S.maxes.hangTotal??""}"></div>
+    <div class="actions" style="padding-left:0;padding-right:0;border-top:1px solid var(--line-soft);margin-top:6px">
+      <button class="btn" id="btn-save-max">Save maxes</button>
+    </div>
+  </div>`;
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderFoot(){
+  $("foot").innerHTML =
+    '<button id="f-undo">Undo last entry</button>'+
+    '<button id="f-export">Export JSON</button>'+
+    '<button id="f-reset">Reset everything</button>';
+  $("f-undo").onclick = ()=>{
+    const ds = Object.keys(S.entries).sort();
+    if(!ds.length) return toast("Nothing to undo");
+    const last = ds[ds.length-1];
+    delete S.entries[last];
+    save(); render(); toast("Removed "+pretty(last));
+  };
+  $("f-export").onclick = ()=>{
+    const blob = new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download="finger-block-log.json"; a.click();
+    toast("Exported");
+  };
+  $("f-reset").onclick = ()=>{
+    if(!confirm("Delete all logged sessions and maxes? This can't be undone.")) return;
+    S = JSON.parse(JSON.stringify(DEFAULT));
+    save(); render(); toast("Reset");
+  };
+}
+
+function render(){
+  renderRail();
+  ["today","program","history","setup"].forEach(t=>{
+    $("tab-"+t).setAttribute("aria-selected", String(t===tab));
+  });
+  const v = $("view");
+  if(tab==="today")   v.innerHTML = renderToday();
+  if(tab==="program") v.innerHTML = renderProgram();
+  if(tab==="history") v.innerHTML = renderHistory();
+  if(tab==="setup")   v.innerHTML = renderSetup();
+  wire();
+}
+
+/* ============================== events ============================== */
+function num(id){ const el=$(id); if(!el) return null; const v=parseFloat(el.value); return isFinite(v)?v:null; }
+
+function wire(){
+  const p = currentPlan();
+
+  // Tapping the row body starts the sequence from that set.
+  document.querySelectorAll("#fb .set-body").forEach(btn=>{
+    btn.onclick = ()=>{ startPhase(+btn.dataset.i, "prep"); };
+  });
+  // The circle is a manual override — tick or untick without running the clock.
+  document.querySelectorAll("#fb .tick").forEach(btn=>{
+    btn.onclick = (ev)=>{
+      ev.stopPropagation();
+      const i = +btn.dataset.i;
+      const d = S.drafts[p.date] || (S.drafts[p.date]=[]);
+      d[i] = !d[i];
+      if(T.ready===i) T.ready = null;
+      save(); paintStack();
+    };
+  });
+  const bu = $("btn-undo-skip");
+  if(bu) bu.onclick = ()=>{
+    const d = S.lastSkip;
+    if(d && S.entries[d] && S.entries[d].status==="missed") delete S.entries[d];
+    S.lastSkip = null;
+    save(); render(); toast("Skip undone — back to "+pretty(d));
+  };
+  const bs = $("btn-start");
+  if(bs) bs.onclick = ()=>{
+    const d = S.drafts[p.date] || [];
+    const rows = ctxRows().rows;
+    let i = 0; while(i < rows.length && d[i]) i++;
+    if(i >= rows.length){ toast("Every set is already ticked"); return; }
+    startPhase(i, "prep");
+  };
+  const ba = $("btn-auto");
+  if(ba) ba.onclick = ()=> setAuto(!S.autoAdvance);
+  const bc = $("btn-clear");
+  if(bc) bc.onclick = ()=>{
+    delete S.drafts[p.date]; save(); paintStack(); toast("Ticks cleared");
+  };
+  paintStack();
+
+  const done = $("btn-done");
+  if(done) done.onclick = ()=>{
+    const pl = currentPlan();
+    const def = pl.def;
+    const e = {status:"done", idx:pl.idx, advances:pl.advances, name:def.name,
+               rpe:num("f_rpe"), notes:($("f_notes")&&$("f_notes").value.trim())||""};
+    const uL=num("f_useL"), uR=num("f_useR");
+    if(uL!=null||uR!=null) e.loads={L:uL,R:uR};
+
+    // capture test results
+    const bw=num("f_bw"); if(bw!=null) S.bodyweight=bw;
+    const b20L=num("f_b20L"), b20R=num("f_b20R");
+    const b10L=num("f_b10L"), b10R=num("f_b10R");
+    const added=num("f_added");
+    if(b20L!=null) S.maxes.block20L=b20L;
+    if(b20R!=null) S.maxes.block20R=b20R;
+    if(b10L!=null) S.maxes.block10L=b10L;
+    if(b10R!=null) S.maxes.block10R=b10R;
+    if(added!=null && S.bodyweight!=null) S.maxes.hangTotal = S.bodyweight + added;
+    // first time each max is set, keep it as baseline
+    ["block20L","block20R","block10L","block10R","hangTotal"].forEach(k=>{
+      if(S.baseline[k]==null && S.maxes[k]!=null) S.baseline[k]=S.maxes[k];
+    });
+
+    if((def.kind==="test20"||def.kind==="test10"||def.kind==="testhang") &&
+        b20L==null && b10L==null && added==null){
+      if(!confirm("You haven't entered test numbers. Log this session anyway? Later loads will stay unprescribed.")) return;
+    }
+
+    S.snap = null;
+    S.entries[pl.date]=e;
+    S.lastSkip = null;
+    delete S.drafts[pl.date];
+    stopTimer();
+    save(); render(); toast("Logged");
+  };
+
+  const miss = $("btn-miss");
+  if(miss) miss.onclick = ()=>{
+    const pl = currentPlan();
+    S.entries[pl.date] = {status:"missed", idx:pl.idx};
+    S.lastSkip = pl.date;
+    delete S.drafts[pl.date];
+    stopTimer();
+    save(); render(); toast("Day skipped — schedule moved on");
+  };
+
+  const ss = $("btn-save-setup");
+  if(ss) ss.onclick = ()=>{
+    S.startDate = $("s_start").value || S.startDate;
+    S.increment = num("s_inc") || 1.25;
+    S.snap = null;
+    S.tare = num("s_tare") || 0;
+    const bw = num("s_bw"); if(bw!=null) S.bodyweight=bw;
+    S.prep = num("s_prep"); if(S.prep==null) S.prep = 5;
+    S.sound = $("s_sound").checked;
+    S.keepAwake = $("s_awake").checked;
+    save(); render(); toast("Saved");
+  };
+  document.querySelectorAll("#fb .seg-b").forEach(b=>{
+    b.onclick = ()=>{
+      const to = b.dataset.u;
+      if(to === S.units) return;
+      convertUnits(to);
+      render();
+      toast("Switched to "+to+" — all stored weights converted");
+    };
+  });
+  const sm = $("btn-save-max");
+  if(sm) sm.onclick = ()=>{
+    S.snap = null;
+    S.maxes.block20L=num("m_b20L"); S.maxes.block20R=num("m_b20R");
+    S.maxes.block10L=num("m_b10L"); S.maxes.block10R=num("m_b10R");
+    S.maxes.hangTotal=num("m_hang");
+    ["block20L","block20R","block10L","block10R","hangTotal"].forEach(k=>{
+      if(S.baseline[k]==null && S.maxes[k]!=null) S.baseline[k]=S.maxes[k];
+    });
+    save(); render(); toast("Maxes updated");
+  };
+}
+
+["today","program","history","setup"].forEach(t=>{
+  $("tab-"+t).onclick = ()=>{ tab=t; render(); };
+});
+
+/* ============================== boot ============================== */
+(async function(){
+  const stored = await load();
+  S = stored ? Object.assign(JSON.parse(JSON.stringify(DEFAULT)), stored) : JSON.parse(JSON.stringify(DEFAULT));
+  S.maxes = Object.assign({}, DEFAULT.maxes, S.maxes||{});
+  S.baseline = Object.assign({}, DEFAULT.baseline, S.baseline||{});
+  S.entries = S.entries||{}; S.drafts = S.drafts||{};
+  renderFoot();
+  wireTimer();
+  render();
+})();
+
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){ /* offline cache unavailable */ });
+  });
+}
+</script>
+</body>
+</html>

@@ -24,6 +24,7 @@
 <body>
 <style>
 
+
   :root{
     --paper:#E3D5BC;
     --card:#EFE4CE;
@@ -383,6 +384,105 @@
   }
   .rule-v{font-family:var(--serif);font-size:13px;line-height:1.55;color:var(--pencil);}
 
+
+  /* ---- charts ---- */
+  .chart-box{margin-bottom:20px;}
+  .chart-t{
+    font-family:var(--mono);font-size:9px;letter-spacing:0.19em;text-transform:uppercase;
+    color:var(--oxide);font-weight:700;margin-bottom:7px;
+  }
+  .chart{background:var(--card);border:1px solid var(--edge);border-radius:2px;padding:8px 6px 6px;
+         box-shadow:2px 2px 0 rgba(155,132,94,.28);}
+  .chart svg{width:100%;height:auto;display:block;}
+  .chart .ct{font-family:var(--mono);font-size:7.5px;fill:var(--pencil);}
+  .chart-key{
+    display:flex;flex-wrap:wrap;gap:4px 12px;padding:7px 6px 2px;
+    font-family:var(--mono);font-size:9px;color:var(--pencil);letter-spacing:0.04em;
+  }
+  .chart-key span{display:flex;align-items:center;gap:5px;}
+  .chart-key i{width:9px;height:3px;border-radius:2px;display:block;}
+  .chart-empty{
+    background:var(--card);border:1px dashed var(--edge);border-radius:2px;padding:13px;
+    font-family:var(--serif);font-style:italic;font-size:12.5px;line-height:1.5;color:var(--pencil);
+  }
+  /* ---- test log ---- */
+  .tgrp{margin-bottom:14px;}
+  .tgrp-d{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;
+    color:var(--ink);font-weight:700;padding-bottom:5px;border-bottom:1.5px solid var(--ink);
+  }
+  .tgrp-d span{color:var(--pencil);font-weight:400;letter-spacing:0.06em;}
+  .tgrp .line .r em{font-style:normal;display:block;font-size:9.5px;color:var(--pencil);}
+
+
+  /* ---- accordions ---- */
+  .acc{border:1px solid var(--edge);border-radius:2px;background:var(--card);margin-bottom:10px;
+       box-shadow:2px 2px 0 rgba(155,132,94,.28);}
+  .acc-h{
+    width:100%;display:grid;grid-template-columns:1fr auto 22px;align-items:center;gap:10px;
+    background:none;border:0;padding:14px 14px;text-align:left;cursor:pointer;color:var(--ink);
+  }
+  .acc.open .acc-h{border-bottom:1px solid var(--rule);}
+  .acc-n{font-size:16px;font-weight:900;letter-spacing:-0.02em;}
+  .acc-m{font-family:var(--mono);font-size:9.5px;letter-spacing:0.1em;color:var(--pencil);text-transform:uppercase;}
+  .acc-c{font-family:var(--mono);font-size:17px;color:var(--oxide);text-align:center;line-height:1;}
+  .acc-h:focus-visible{outline:2px solid var(--oxide);outline-offset:-2px;}
+  .acc-b{padding:14px;}
+  .acc-b > .card{box-shadow:none;}
+
+  /* ---- log entry form ---- */
+  .entryform{background:var(--sunk);border:1px solid var(--edge);border-radius:2px;padding:13px;}
+  .entryform .fld{margin-bottom:10px;}
+  .entryact{display:flex;gap:9px;margin-top:12px;}
+  .btn.sm{padding:9px 13px;font-size:12px;}
+  .gradepick{display:grid;grid-template-columns:78px 1fr;gap:8px;}
+  .probs{margin:4px 0 9px;}
+  .probs-h{font-family:var(--mono);font-size:9px;letter-spacing:0.19em;text-transform:uppercase;
+    color:var(--oxide);font-weight:700;margin-bottom:7px;}
+  .probs-h span{color:var(--pencil);font-weight:400;letter-spacing:0.05em;text-transform:none;font-size:10px;}
+  .prow{display:grid;grid-template-columns:62px 1fr 54px auto 26px;gap:6px;align-items:center;margin-bottom:6px;}
+  .prow select,.prow input[type=number]{
+    background:var(--card);border:1px solid var(--edge);border-radius:2px;color:var(--ink);
+    padding:7px 5px;font-family:var(--mono);font-size:13px;width:100%;
+  }
+  .p-sent{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:var(--pencil);}
+  .p-sent input{width:15px;height:15px;accent-color:var(--moss);}
+  .p-x{background:none;border:0;color:var(--faint);font-size:17px;cursor:pointer;padding:0;}
+  .p-x:hover{color:var(--oxide);}
+
+  /* ---- log history ---- */
+  .loghist{margin-top:16px;}
+  .loghist h4{margin:0 0 8px;font-family:var(--mono);font-size:9px;letter-spacing:0.19em;
+    text-transform:uppercase;color:var(--pencil);font-weight:700;}
+  .logrow{display:grid;grid-template-columns:74px 1fr auto;gap:9px;align-items:baseline;
+    padding:9px 0;border-bottom:1px solid var(--rule-2);}
+  .logrow-d{font-family:var(--mono);font-size:10.5px;color:var(--pencil);}
+  .logrow-v{font-size:12.5px;color:var(--ink);line-height:1.45;}
+  .logrow-v b{font-family:var(--mono);font-size:9px;letter-spacing:0.11em;text-transform:uppercase;
+    color:var(--pencil);font-weight:700;}
+  .logrow-v em{font-style:normal;display:block;font-family:var(--mono);font-size:10px;color:var(--moss);}
+  .logrow-v em.n{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--pencil);}
+  .logrow-a{display:flex;gap:7px;align-items:center;}
+  .logrow-a button{background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:10px;
+    color:var(--pencil);padding:2px;}
+  .lg-edit:hover{color:var(--ink);}
+  .lg-del{font-size:15px !important;}
+  .lg-del:hover{color:var(--oxide);}
+
+  /* ---- activity editor ---- */
+  .fieldrow{display:grid;grid-template-columns:1fr auto 24px;gap:9px;align-items:center;
+    padding:8px 0;border-bottom:1px solid var(--rule-2);}
+  .fr-l{font-size:13.5px;font-weight:700;}
+  .fr-t{font-family:var(--mono);font-size:9.5px;color:var(--pencil);letter-spacing:0.06em;}
+  .fr-x{background:none;border:0;color:var(--faint);font-size:17px;cursor:pointer;padding:0;}
+  .fr-x:hover{color:var(--oxide);}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;}
+  .pchip{background:var(--sunk);border:1px solid var(--edge);border-radius:2px;cursor:pointer;
+    padding:7px 10px;font-family:var(--mono);font-size:10.5px;color:var(--ink);letter-spacing:0.03em;}
+  .pchip:hover{border-color:var(--oxide);color:var(--oxide);}
+  .addprog{display:flex;flex-direction:column;gap:9px;}
+  .addprog .btn[disabled]{opacity:.5;cursor:default;}
+
   @media (prefers-reduced-motion: reduce){
     #fb *,.tover,.tover *{transition:none !important;}
     .tover.closing .tnum{animation:none !important;}
@@ -399,7 +499,9 @@
   }
 
 
+
 </style>
+
 
 
 <div id="fb">
@@ -410,10 +512,10 @@
   <div class="rail" id="rail"></div>
   <div class="railinfo" id="railinfo"></div>
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-today" aria-selected="true">Today</button>
-    <button role="tab" id="tab-program" aria-selected="false">Program</button>
-    <button role="tab" id="tab-history" aria-selected="false">History</button>
-    <button role="tab" id="tab-setup" aria-selected="false">Setup</button>
+    <button role="tab" id="tab-programs" aria-selected="true">Programs</button>
+    <button role="tab" id="tab-logs" aria-selected="false">Logs</button>
+    <button role="tab" id="tab-data" aria-selected="false">Data</button>
+    <button role="tab" id="tab-settings" aria-selected="false">Settings</button>
   </div>
   <div class="wrap" id="view"></div>
   <div class="foot" id="foot"></div>
@@ -441,6 +543,7 @@
 </div>
 
 
+
 <script>
 (function(){
 "use strict";
@@ -464,6 +567,8 @@ function save(){
     catch(e){ toast("Save failed — check private browsing is off"); }
   }, 250);
 }
+
+function save2(){ save(); }
 
 /* ============================== program ============================== */
 // Block work is unilateral: hands alternate, so ~60s between hands is ~2:20 of
@@ -509,7 +614,7 @@ const SESSIONS = [
   /* ================= PHASE 2 · max block pulls ================= */
   W("Heavy — 20mm",
     "First load off the new baseline. A 7s max makes 8s working holds sit a little heavier than they would off a 10s max, so this opens at 80% rather than 85%. Leave about 3s in the tank — if you couldn't have held 11s, it's too heavy.",
-    [blk({sets:4, hold:8, load:{ref:"block20", pct:0.80}})]),
+    [blk({sets:5, hold:8, load:{ref:"block20", pct:0.80}})]),
 
   W("Density — 20mm",
     "Deliberately easy, and it is not filler. Frequent low-intensity loading builds strength on its own and stacks with the heavy days rather than just recovering from them. This thread runs all the way to week 8.",
@@ -521,7 +626,7 @@ const SESSIONS = [
 
   W("Heavy — 20mm",
     "Same shape, slightly heavier. Around 2–3s of margin.",
-    [blk({sets:4, hold:8, load:{ref:"block20", pct:0.83}})]),
+    [blk({sets:5, hold:8, load:{ref:"block20", pct:0.83}})]),
 
   W("Density — 20mm",
     "Still easy, still Wednesday, still not a hard day. If the heavy days are going well this is the session that lets them keep going well.",
@@ -529,11 +634,11 @@ const SESSIONS = [
 
   W("Small edge — 10mm",
     "The one loaded small-edge day of the block. Half crimp holds or the set doesn't count — watch for the index finger quietly unloading. Any doubt at all about skin or joints and this becomes 20mm at 90%.",
-    [blk({edge:"10mm", sets:4, hold:8, load:{ref:"block10", pct:0.85}})]),
+    [blk({edge:"10mm", sets:5, hold:8, load:{ref:"block10", pct:0.85}})]),
 
   W("Heavy — 20mm",
     "Fifth set added. Margin down to about 2s.",
-    [blk({sets:5, hold:8, load:{ref:"block20", pct:0.86}})]),
+    [blk({sets:6, hold:8, load:{ref:"block20", pct:0.86}})]),
 
   W("Density — 20mm",
     "Small bump, still comfortable. You should finish this able to boulder well.",
@@ -541,11 +646,11 @@ const SESSIONS = [
 
   W("Open hand — 20mm",
     "Three-finger drag or open hand, by feel at RPE 8 — no test needed, and none of your percentages apply here. It's the most tendon-friendly grip you have and it covers the slopers and rounded holds that half crimp misses. Skip it if the week has been heavy.",
-    [blk({grip:"Open hand / drag", sets:4, hold:8, load:{rpe:"8"}})]),
+    [blk({grip:"Open hand / drag", sets:5, hold:8, load:{rpe:"8"}})]),
 
   W("Heavy — 20mm",
     "Heaviest block-pull day of the program. 1–2s of margin. Full warm-up, no shortcuts, and stop the session if a finger starts doing something the others aren't.",
-    [blk({sets:5, hold:8, load:{ref:"block20", pct:0.90}})]),
+    [blk({sets:6, hold:8, load:{ref:"block20", pct:0.90}})]),
 
   W("Density — 20mm",
     "Last density-only session. From Monday the whole stimulus changes.",
@@ -618,27 +723,149 @@ const RULES = [
    "About 15g gelatin or hydrolysed collagen plus ~200mg vitamin C, 30–60 min before loading. Modest evidence — it doubles collagen synthesis markers, which is not the same as proven injury or performance benefit. Sleep and protein do more."]
 ];
 
+
+/* ============================== data model (v2) ==============================
+   v1 stored one session per calendar date and a single overwritable max per tool.
+   Neither survives what comes next: two programs can share a Monday, and a max
+   you overwrite is a max you can't chart. So:
+
+     S.log[]     append-only session events, each tagged with its program
+     S.tests[]   append-only test results, each with the bodyweight and protocol
+                 that produced it — those two are what make a number comparable
+                 to one taken six months later
+     S.maxes     NOT stored. Derived from S.tests on load, so it can never drift
+                 out of step with the history behind it.
+   ========================================================================== */
+const PROGRAM = {
+  id:"finger-block-8wk",
+  name:"8-Week Finger Strength Block",
+  days:[1,3,5]                       // Mon / Wed / Fri
+};
+const CUR = PROGRAM.id;
+
+function PS(){                       // per-program state
+  S.programs = S.programs || {};
+  if(!S.programs[CUR]) S.programs[CUR] = {startDate:"2026-07-24", lastSkip:null, archived:false};
+  return S.programs[CUR];
+}
+// session events for the current program, as a date-keyed view
+function EN(){
+  const o = {};
+  (S.log||[]).forEach(e=>{ if(e.program===CUR) o[e.date] = e; });
+  return o;
+}
+function putEntry(date, obj){
+  S.log = (S.log||[]).filter(e=>!(e.program===CUR && e.date===date));
+  S.log.push(Object.assign({date, program:CUR}, obj));
+  S.log.sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : 0);
+}
+function dropEntry(date){
+  S.log = (S.log||[]).filter(e=>!(e.program===CUR && e.date===date));
+}
+function draftKey(date){ return CUR+"|"+date; }
+
+/* ---- tests ---- */
+const TOOLS = [
+  {id:"block20", label:"Block 20mm", hands:["L","R"], protocol:"7s half crimp"},
+  {id:"block10", label:"Block 10mm", hands:["L","R"], protocol:"7s half crimp"},
+  {id:"hang",    label:"Two-arm hang 20mm", hands:["both"], protocol:"10s half crimp"}
+];
+function toolOf(id){ return TOOLS.find(t=>t.id===id) || {id, label:id, hands:["L","R"], protocol:""}; }
+function addTest(o){
+  S.tests = S.tests || [];
+  S.tests.push(Object.assign({
+    id: "t"+Date.now()+Math.random().toString(36).slice(2,6),
+    date: todayYmd(), program: CUR
+  }, o));
+  S.tests.sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : 0);
+  refreshMaxes();
+}
+function testsFor(tool, hand){
+  return (S.tests||[]).filter(t=>t.tool===tool && t.hand===hand)
+    .sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : 0);
+}
+// S.maxes is a cache over S.tests — latest is current, first is baseline
+function refreshMaxes(){
+  const last = (tool,hand)=>{ const t=testsFor(tool,hand); return t.length ? t[t.length-1].load : null; };
+  const first= (tool,hand)=>{ const t=testsFor(tool,hand); return t.length ? t[0].load : null; };
+  S.maxes    = {block20L:last("block20","L"), block20R:last("block20","R"),
+                block10L:last("block10","L"), block10R:last("block10","R"),
+                hangTotal:last("hang","both")};
+  S.baseline = {block20L:first("block20","L"), block20R:first("block20","R"),
+                block10L:first("block10","L"), block10R:first("block10","R"),
+                hangTotal:first("hang","both")};
+}
+
+/* ---- v1 -> v2 migration ---- */
+function migrate(d){
+  if(!d) return d;
+  if(d.v === 3) return d;
+  if(d.v === 2){                       // v2 -> v3: logs arrive, nothing is reshaped
+    const o = Object.assign({}, d);
+    o.v = 3;
+    o.activities = o.activities && o.activities.length ? o.activities : defaultActivities();
+    o.journal = o.journal || [];
+    return o;
+  }
+  const o = Object.assign({}, d);
+  o.v = 3;
+  o.activities = defaultActivities();
+  o.journal = [];
+  o.programs = {};
+  o.programs[CUR] = {startDate: d.startDate || "2026-07-24",
+                     lastSkip: d.lastSkip || null, archived:false};
+  o.log = [];
+  Object.keys(d.entries || {}).sort().forEach(date=>{
+    o.log.push(Object.assign({date, program:CUR}, d.entries[date]));
+  });
+  // v1 maxes carried no date. Attribute each to the day its test session was logged
+  // where that can be worked out, otherwise to the first session on record.
+  o.tests = [];
+  const fallback = o.log.length ? o.log[0].date : (d.startDate || "2026-07-24");
+  const dateOfIdx = i => { const e = o.log.find(x=>x.idx===i && x.status==="done"); return e ? e.date : fallback; };
+  const m = d.maxes || {};
+  const push = (tool,hand,load,date,proto)=>{
+    if(load==null) return;
+    o.tests.push({id:"m"+tool+hand, date, program:CUR, tool, hand, load,
+                  bw:d.bodyweight||null, protocol:proto, note:"carried over from an earlier version"});
+  };
+  push("block20","L",m.block20L,dateOfIdx(3),"7s half crimp");
+  push("block20","R",m.block20R,dateOfIdx(3),"7s half crimp");
+  push("block10","L",m.block10L,dateOfIdx(6),"7s half crimp");
+  push("block10","R",m.block10R,dateOfIdx(6),"7s half crimp");
+  push("hang","both",m.hangTotal,dateOfIdx(16),"10s half crimp");
+  o.tests.sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : 0);
+  // drafts get namespaced by program from here on
+  const nd = {};
+  Object.keys(d.drafts || {}).forEach(k=>{ nd[CUR+"|"+k] = d.drafts[k]; });
+  o.drafts = nd;
+  delete o.entries; delete o.startDate; delete o.lastSkip;
+  return o;
+}
+
 /* ============================== state ============================== */
 const DEFAULT = {
-  v:1,
+  v:3,
   units:"lb",
   increment:2.5,
   tare:0,
   bodyweight:null,
-  startDate:"2026-07-24",
-  lastSkip:null,
   snap:null,
   prep:5,
   sound:true,
   autoAdvance:false,
   keepAwake:true,
+  programs:{},
+  activities:[],// user-defined log activities
+  journal:[],   // append-only log entries against those activities
+  log:[],       // append-only session events
+  tests:[],     // append-only test results
   maxes:{block20L:null, block20R:null, block10L:null, block10R:null, hangTotal:null},
   baseline:{block20L:null, block20R:null, block10L:null, block10R:null, hangTotal:null},
-  entries:{},   // "YYYY-MM-DD" -> {status, idx, advances, loads, rpe, notes}
-  drafts:{}     // "YYYY-MM-DD" -> [bool,...]
+  drafts:{}     // "<program>|YYYY-MM-DD" -> [bool,...]
 };
 let S = null;
-let tab = "today";
+let tab = "programs";
 let selStation = null;
 
 /* ============================== dates ============================== */
@@ -654,7 +881,7 @@ function pretty(s){ const d=parseYmd(s); return DOW[d.getDay()]+" "+d.getDate()+
 
 // Mon/Wed/Fri slots from start date.
 function slots(n){
-  const out=[]; const d=parseYmd(S.startDate);
+  const out=[]; const d=parseYmd(PS().startDate);
   let guard=0;
   while(out.length<n && guard++<800){
     const w=d.getDay();
@@ -666,20 +893,22 @@ function slots(n){
 
 /* ============================== pointers ============================== */
 function doneCount(){
-  return Object.values(S.entries).filter(e=>e.status==="done" && e.advances!==false).length;
+  return Object.values(EN()).filter(e=>e.status==="done" && e.advances!==false).length;
 }
 function nextSlot(){
   const list = slots(120);
-  for(const s of list){ if(!S.entries[s]) return s; }
+  const en = EN();
+  for(const s of list){ if(!en[s]) return s; }
   return list[list.length-1];
 }
 function lastDoneDate(){
-  const ds = Object.keys(S.entries).filter(d=>S.entries[d].status==="done").sort();
+  const ds = Object.keys(EN()).filter(d=>EN()[d].status==="done").sort();
   return ds.length ? ds[ds.length-1] : null;
 }
 function overdueSlots(){
   const t = todayYmd();
-  return slots(120).filter(s=>!S.entries[s] && daysBetween(s,t)>0);
+  const en = EN();
+  return slots(120).filter(s=>!en[s] && daysBetween(s,t)>0);
 }
 
 // What to show for the next unlogged slot, plus any regression applied.
@@ -719,24 +948,24 @@ const LB_PER_KG = 2.2046226218;
 // values we converted away from and restore it if the switch is reversed.
 function unitSnapshot(){
   const loads = {};
-  Object.keys(S.entries).forEach(d=>{
-    const e = S.entries[d];
+  Object.keys(EN()).forEach(d=>{
+    const e = EN()[d];
     if(e && e.loads) loads[d] = {L:e.loads.L, R:e.loads.R};
   });
   return {units:S.units, bodyweight:S.bodyweight, tare:S.tare, increment:S.increment,
-          maxes:Object.assign({},S.maxes), baseline:Object.assign({},S.baseline), loads};
+          tests:(S.tests||[]).map(t=>Object.assign({},t)), loads};
 }
 function applySnapshot(sn){
   S.bodyweight = sn.bodyweight; S.tare = sn.tare; S.increment = sn.increment;
-  S.maxes = Object.assign({}, sn.maxes);
-  S.baseline = Object.assign({}, sn.baseline);
+  S.tests = (sn.tests||[]).map(t=>Object.assign({},t));
   Object.keys(sn.loads).forEach(d=>{
-    if(S.entries[d] && S.entries[d].loads){
-      S.entries[d].loads.L = sn.loads[d].L;
-      S.entries[d].loads.R = sn.loads[d].R;
+    if(EN()[d] && EN()[d].loads){
+      EN()[d].loads.L = sn.loads[d].L;
+      EN()[d].loads.R = sn.loads[d].R;
     }
   });
   S.units = sn.units;
+  refreshMaxes();
 }
 function convertUnits(to){
   if(to === S.units) return;
@@ -747,16 +976,15 @@ function convertUnits(to){
   S.bodyweight = cv(S.bodyweight);
   S.tare       = cv(S.tare);
   S.increment  = cv(S.increment);
-  ["block20L","block20R","block10L","block10R","hangTotal"].forEach(k=>{
-    S.maxes[k]    = cv(S.maxes[k]);
-    S.baseline[k] = cv(S.baseline[k]);
-  });
-  Object.keys(S.entries).forEach(d=>{
-    const e = S.entries[d];
+  (S.tests||[]).forEach(t=>{ t.load = cv(t.load); if(t.bw!=null) t.bw = cv(t.bw);
+                             if(t.added!=null) t.added = cv(t.added); });
+  Object.keys(EN()).forEach(d=>{
+    const e = EN()[d];
     if(e && e.loads){ e.loads.L = cv(e.loads.L); e.loads.R = cv(e.loads.R); }
   });
   S.units = to;
   S.snap = snap;
+  refreshMaxes();
   save();
 }
 
@@ -789,6 +1017,587 @@ function blockLoads(b, mult){
     ? "plates to add: "+fmt(l-S.tare)+" / "+fmt(r-S.tare)+" "+unit()+" (hardware "+fmt(S.tare)+")"
     : null;
   return {L:fmt(l), R:fmt(r), sub};
+}
+
+/* ============================== charts ==============================
+   Hand-rolled SVG: the app has to work with no network in a basement gym,
+   so no chart library. Every chart reads S.tests or S.log, which means new
+   data shows up automatically without touching this code.
+   ================================================================== */
+function chartEmpty(msg){
+  return '<div class="chart-empty">'+msg+'</div>';
+}
+// series: [{name, color, pts:[{x:"YYYY-MM-DD", y:Number}]}]
+function lineChart(series, opts){
+  opts = opts || {};
+  const pts = series.reduce((a,s)=>a.concat(s.pts), []);
+  if(!pts.length) return chartEmpty(opts.empty || "No data yet.");
+  const W = 320, H = 150, L = 38, R = 8, T = 12, B = 24;
+  const xs = [...new Set(pts.map(p=>p.x))].sort();
+  const ys = pts.map(p=>p.y);
+  let lo = Math.min(...ys), hi = Math.max(...ys);
+  if(opts.zero) lo = Math.min(0, lo);
+  if(hi === lo){ hi = lo + (Math.abs(lo)*0.1 || 1); lo = lo - (Math.abs(lo)*0.1 || 1); }
+  const pad = (hi-lo)*0.12; lo -= pad; hi += pad;
+  const t0 = parseYmd(xs[0]).getTime(), t1 = parseYmd(xs[xs.length-1]).getTime();
+  const X = d => L + (t1===t0 ? (W-L-R)/2 : (parseYmd(d).getTime()-t0)/(t1-t0)*(W-L-R));
+  const Y = v => T + (1-(v-lo)/(hi-lo))*(H-T-B);
+
+  let g = '';
+  // horizontal guides
+  for(let i=0;i<=3;i++){
+    const v = lo + (hi-lo)*i/3, y = Y(v);
+    g += '<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(W-R)+'" y2="'+y.toFixed(1)+'" '
+       + 'stroke="var(--edge)" stroke-width="0.6" opacity=".7"/>'
+       + '<text x="'+(L-5)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" class="ct">'
+       + (opts.fmt ? opts.fmt(v) : (Math.round(v*10)/10))+'</text>';
+  }
+  series.forEach(s=>{
+    if(!s.pts.length) return;
+    const sorted = s.pts.slice().sort((a,b)=> a.x<b.x ? -1 : 1);
+    if(sorted.length > 1){
+      const d = sorted.map((p,i)=>(i?'L':'M')+X(p.x).toFixed(1)+' '+Y(p.y).toFixed(1)).join(' ');
+      g += '<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="2" '
+         + 'stroke-linejoin="round" stroke-linecap="round"/>';
+    }
+    sorted.forEach(p=>{
+      g += '<circle cx="'+X(p.x).toFixed(1)+'" cy="'+Y(p.y).toFixed(1)+'" r="3.2" fill="'+s.color+'"/>';
+    });
+  });
+  // date labels: first and last only, so they never collide on a phone
+  g += '<text x="'+L+'" y="'+(H-6)+'" class="ct">'+pretty(xs[0])+'</text>';
+  if(xs.length>1)
+    g += '<text x="'+(W-R)+'" y="'+(H-6)+'" text-anchor="end" class="ct">'+pretty(xs[xs.length-1])+'</text>';
+
+  const key = series.filter(s=>s.pts.length).map(s=>
+    '<span><i style="background:'+s.color+'"></i>'+s.name+'</span>').join('');
+  return '<div class="chart"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+(opts.title||'chart')+'">'
+       + g + '</svg><div class="chart-key">'+key+'</div></div>';
+}
+
+const C_OXIDE = "var(--oxide)", C_MOSS = "var(--moss)", C_INK = "var(--ink)", C_FAINT = "var(--faint)";
+
+// 1 — strength over time, as strength:weight where bodyweight is known
+function chartMaxes(){
+  const mk = (tool, hand, name, color) => ({
+    name, color,
+    pts: testsFor(tool, hand).filter(t=>t.bw).map(t=>({x:t.date, y: t.load/t.bw}))
+  });
+  const s = [
+    mk("block20","L","20mm L",C_OXIDE),
+    mk("block20","R","20mm R",C_MOSS),
+    mk("block10","L","10mm L",C_INK),
+    mk("block10","R","10mm R",C_FAINT),
+    {name:"Two-arm hang", color:"#7A6A97",
+     pts: testsFor("hang","both").filter(t=>t.bw).map(t=>({x:t.date, y:t.load/t.bw}))}
+  ].filter(x=>x.pts.length);
+  return lineChart(s, {title:"Strength to weight over time", fmt:v=>v.toFixed(2)+"x",
+    empty:"Your first test is session 4. Once it's logged, this charts strength as a multiple of bodyweight — which is the number that stays honest when your weight moves."});
+}
+// 2 — is the left/right gap closing?
+function chartAsym(){
+  const mk = (tool,name,color)=>{
+    const L = testsFor(tool,"L"), R = testsFor(tool,"R");
+    const byDate = {};
+    L.forEach(t=>{ byDate[t.date] = byDate[t.date]||{}; byDate[t.date].L = t.load; });
+    R.forEach(t=>{ byDate[t.date] = byDate[t.date]||{}; byDate[t.date].R = t.load; });
+    return {name, color, pts: Object.keys(byDate).sort()
+      .filter(d=>byDate[d].L!=null && byDate[d].R!=null)
+      .map(d=>({x:d, y: Math.abs(byDate[d].L-byDate[d].R)/Math.max(byDate[d].L,byDate[d].R)*100}))};
+  };
+  const s = [mk("block20","20mm",C_OXIDE), mk("block10","10mm",C_INK)].filter(x=>x.pts.length);
+  return lineChart(s, {title:"Left/right asymmetry", zero:true, fmt:v=>Math.round(v)+"%",
+    empty:"Needs two tests on the same tool. Anything above 8% is worth an extra set on the weaker side — this shows whether the gap is closing."});
+}
+// 3 — the early-warning chart: effort creeping up while load holds steady
+function chartRPE(){
+  const pts = (S.log||[]).filter(e=>e.program===CUR && e.status==="done" && e.rpe!=null)
+    .map(e=>({x:e.date, y:e.rpe}));
+  return lineChart([{name:"Session RPE", color:C_OXIDE, pts}], {
+    title:"Session RPE over time", fmt:v=>v.toFixed(1),
+    empty:"Logged automatically from the RPE box. Watch for it drifting up while your loads stay flat — that's fatigue accumulating, and it's the earliest signal to back off."});
+}
+// 4 — are you actually hitting the prescribed number?
+function chartAdherence(){
+  const pts = [];
+  (S.log||[]).filter(e=>e.program===CUR && e.status==="done" && e.loads).forEach(e=>{
+    const def = SESSIONS[e.idx]; if(!def) return;
+    const b = (def.blocks||[])[0]; if(!b || !b.load || b.load.rpe) return;
+    const m = S.maxes, ref = b.load.ref;
+    if(ref === "hangTotal") return;
+    const pL = m[ref+"L"]!=null ? m[ref+"L"]*b.load.pct : null;
+    const pR = m[ref+"R"]!=null ? m[ref+"R"]*b.load.pct : null;
+    const act = [e.loads.L, e.loads.R].filter(v=>v!=null);
+    const pre = [pL, pR].filter(v=>v!=null);
+    if(!act.length || !pre.length) return;
+    const a = act.reduce((x,y)=>x+y,0)/act.length, p = pre.reduce((x,y)=>x+y,0)/pre.length;
+    pts.push({x:e.date, y: a/p*100});
+  });
+  return lineChart([{name:"Actual vs prescribed", color:C_MOSS, pts}], {
+    title:"Actual load vs prescribed", fmt:v=>Math.round(v)+"%",
+    empty:"Appears once you're on percentage-based sessions and record the load you actually used. Consistently under 100% means the prescription is too heavy; consistently over means your max is stale."});
+}
+
+/* ============================== logs ==============================
+   An activity owns a list of typed fields; an entry holds values for them.
+   Fields are typed objects rather than free text because that is what keeps
+   the analysis question open — a number with a unit can be charted later,
+   a string never can. Grades stay on their own scale and are never converted.
+   ================================================================ */
+const FIELD_TYPES = [
+  {id:"number",   label:"Number"},
+  {id:"duration", label:"Duration (min)"},
+  {id:"rating",   label:"Rating 1–10"},
+  {id:"select",   label:"Pick from a list"},
+  {id:"grade",    label:"Climbing grade"},
+  {id:"check",    label:"Yes / no"},
+  {id:"text",     label:"Short text"}
+];
+
+// kept deliberately separate — V7→V8 is not the same step as V4→V5, and the
+// V/Font mapping is contested, so nothing here is converted behind your back
+const SCALES = {
+  V:    ["VB","V0","V1","V2","V3","V4","V5","V6","V7","V8","V9","V10","V11","V12","V13","V14","V15","V16","V17"],
+  Font: ["3","4","5","5+","6A","6A+","6B","6B+","6C","6C+","7A","7A+","7B","7B+","7C","7C+","8A","8A+","8B","8B+","8C","8C+","9A"]
+};
+function gradeIndex(scale, g){ const a = SCALES[scale]||[]; return a.indexOf(g); }
+
+// offered when you build an activity — pick what fits, add your own, or ignore
+const PRESET_FIELDS = [
+  {id:"duration",  label:"Duration",        type:"duration"},
+  {id:"rpe",       label:"RPE",             type:"rating"},
+  {id:"felt",      label:"How it felt",     type:"rating"},
+  {id:"volume",    label:"Problems tried",  type:"number"},
+  {id:"sends",     label:"Sends",           type:"number"},
+  {id:"hardest",   label:"Hardest grade",   type:"grade"},
+  {id:"angle",     label:"Board angle",     type:"number", unit:"°"},
+  {id:"load",      label:"Load",            type:"number", unit:"lb"},
+  {id:"sets",      label:"Sets",            type:"number"},
+  {id:"reps",      label:"Reps",            type:"number"},
+  {id:"distance",  label:"Distance",        type:"number", unit:"km"},
+  {id:"skin",      label:"Skin",            type:"select", options:["good","thin","split"]},
+  {id:"where",     label:"Where",           type:"select", options:["gym","board","outdoor"]}
+];
+
+function uid(p){ return (p||"x") + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function defaultActivities(){
+  return [
+    {id:"act-boulder", name:"Bouldering", climbs:true, created:todayYmd(), fields:[
+      {id:"where",    label:"Where",         type:"select", options:["gym","board","outdoor"]},
+      {id:"duration", label:"Duration",      type:"duration"},
+      {id:"volume",   label:"Problems tried",type:"number"},
+      {id:"hardest",  label:"Hardest grade", type:"grade"},
+      {id:"felt",     label:"How it felt",   type:"rating"},
+      {id:"skin",     label:"Skin",          type:"select", options:["good","thin","split"]}
+    ]},
+    {id:"act-strength", name:"Strength training", climbs:false, created:todayYmd(), fields:[
+      {id:"duration", label:"Duration", type:"duration"},
+      {id:"rpe",      label:"RPE",      type:"rating"}
+    ]},
+    {id:"act-endurance", name:"Endurance", climbs:false, created:todayYmd(), fields:[
+      {id:"kind",     label:"Type",     type:"select", options:["run","bike","swim","other"]},
+      {id:"duration", label:"Duration", type:"duration"},
+      {id:"distance", label:"Distance", type:"number", unit:"km"},
+      {id:"rpe",      label:"RPE",      type:"rating"}
+    ]}
+  ];
+}
+
+function activityById(id){ return (S.activities||[]).find(a=>a.id===id); }
+function entriesFor(actId, date){
+  return (S.journal||[])
+    .filter(e=>e.activityId===actId && (!date || e.date===date))
+    .sort((a,b)=> a.date<b.date ? 1 : a.date>b.date ? -1 : (b.ts||0)-(a.ts||0));
+}
+
+/* ---- rendering one field's input ---- */
+function fieldInput(f, val, idp){
+  const id = idp+"_"+f.id;
+  const v = (val==null ? "" : val);
+  if(f.type==="select"){
+    return '<select id="'+id+'"><option value="">—</option>'
+      + (f.options||[]).map(o=>'<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>').join("")
+      + '</select>';
+  }
+  if(f.type==="check"){
+    return '<label class="chk" style="border:0;padding:4px 0"><input type="checkbox" id="'+id+'"'
+      + (v===true?' checked':'')+'> yes</label>';
+  }
+  if(f.type==="grade"){
+    const sc = (v && v.scale) || "V", g = (v && v.grade) || "";
+    return '<div class="gradepick">'
+      + '<select id="'+id+'_s" class="gs">'
+      +   Object.keys(SCALES).map(k=>'<option'+(k===sc?' selected':'')+'>'+k+'</option>').join("")
+      + '</select>'
+      + '<select id="'+id+'_g">'+'<option value="">—</option>'
+      +   (SCALES[sc]||[]).map(x=>'<option'+(x===g?' selected':'')+'>'+esc(x)+'</option>').join("")
+      + '</select></div>';
+  }
+  if(f.type==="rating")
+    return '<input type="number" min="1" max="10" step="0.5" id="'+id+'" value="'+v+'" placeholder="1–10">';
+  if(f.type==="duration")
+    return '<input type="number" min="0" step="1" id="'+id+'" value="'+v+'" placeholder="minutes">';
+  if(f.type==="number")
+    return '<input type="number" step="any" id="'+id+'" value="'+v+'" placeholder="'+(f.unit||"")+'">';
+  return '<input type="text" id="'+id+'" value="'+esc(String(v))+'">';
+}
+function readField(f, idp){
+  const id = idp+"_"+f.id, el = $(id);
+  if(f.type==="grade"){
+    const s = $(id+"_s"), g = $(id+"_g");
+    if(!g || !g.value) return null;
+    return {scale:s.value, grade:g.value};
+  }
+  if(!el) return null;
+  if(f.type==="check") return el.checked ? true : null;
+  if(f.type==="text")  return el.value.trim() || null;
+  const n = parseFloat(el.value);
+  return isFinite(n) ? n : null;
+}
+function fieldText(f, v){
+  if(v==null || v==="") return null;
+  if(f.type==="grade")    return v.grade + " (" + v.scale + ")";
+  if(f.type==="check")    return "yes";
+  if(f.type==="duration") return v + " min";
+  if(f.type==="rating")   return v + "/10";
+  if(f.type==="number")   return v + (f.unit ? " "+f.unit : "");
+  return String(v);
+}
+
+/* ---- the entry form: today by default, any date if you're catching up ---- */
+function entryForm(act, entry){
+  const idp = "lg_"+act.id;
+  const e = entry || {date:todayYmd(), values:{}, problems:[], notes:""};
+  let h = '<div class="entryform" data-act="'+act.id+'">';
+  h += '<div class="fld"><label>Date</label><input type="date" id="'+idp+'_date" value="'+e.date+'"></div>';
+  act.fields.forEach(f=>{
+    h += '<div class="fld"><label>'+esc(f.label)+(f.unit?' ('+esc(f.unit)+')':'')+'</label>'
+      +  fieldInput(f, e.values[f.id], idp)+'</div>';
+  });
+  if(act.climbs){
+    h += '<div class="probs" id="'+idp+'_probs">'
+      +  '<div class="probs-h">Problems <span>optional — the summary above is enough on its own</span></div>';
+    (e.problems||[]).forEach((p,i)=>{ h += problemRow(idp, i, p); });
+    h += '</div>'
+      +  '<button class="btn ghost sm" id="'+idp+'_addprob">+ Add problem</button>';
+  }
+  h += '<div class="fld"><label>Notes</label><textarea id="'+idp+'_notes" rows="2">'+esc(e.notes||"")+'</textarea></div>';
+  h += '<div class="entryact">'
+    +  '<button class="btn primary" id="'+idp+'_save">'+(entry?"Update entry":"Save entry")+'</button>'
+    +  (entry ? '<button class="btn ghost" id="'+idp+'_cancel">Cancel</button>' : '')
+    +  '</div></div>';
+  return h;
+}
+function problemRow(idp, i, p){
+  p = p || {scale:"V", grade:"", attempts:null, sent:false, note:""};
+  return '<div class="prow" data-i="'+i+'">'
+    + '<select class="p-scale">'+Object.keys(SCALES).map(k=>'<option'+(k===p.scale?' selected':'')+'>'+k+'</option>').join("")+'</select>'
+    + '<select class="p-grade">'+'<option value="">grade</option>'
+    +   (SCALES[p.scale]||[]).map(x=>'<option'+(x===p.grade?' selected':'')+'>'+esc(x)+'</option>').join("")+'</select>'
+    + '<input type="number" class="p-att" min="1" step="1" placeholder="try" value="'+(p.attempts==null?"":p.attempts)+'">'
+    + '<label class="p-sent"><input type="checkbox"'+(p.sent?' checked':'')+'> sent</label>'
+    + '<button class="p-x" aria-label="Remove">×</button>'
+    + '</div>';
+}
+function readProblems(idp){
+  const box = $(idp+"_probs");
+  if(!box) return [];
+  return [...box.querySelectorAll(".prow")].map(r=>({
+    scale:   r.querySelector(".p-scale").value,
+    grade:   r.querySelector(".p-grade").value,
+    attempts:parseInt(r.querySelector(".p-att").value,10) || null,
+    sent:    r.querySelector(".p-sent input").checked,
+  })).filter(p=>p.grade);
+}
+
+/* ---- the Logs tab ---- */
+function renderLogs(){
+  let h = '';
+  if(!S.activities.length){
+    h += '<div class="empty">No activities yet. Add one to start logging.</div>';
+  }
+  S.activities.forEach(act=>{
+    const open = !!openAcc["log:"+act.id];
+    const today = entriesFor(act.id, todayYmd()).length;
+    const all   = entriesFor(act.id).length;
+    h += '<div class="acc'+(open?' open':'')+'">'
+      +  '<button class="acc-h" data-acc="log:'+act.id+'">'
+      +    '<span class="acc-n">'+esc(act.name)+'</span>'
+      +    '<span class="acc-m">'+(today ? today+" today · " : "")+all+' logged</span>'
+      +    '<span class="acc-c">'+(open?"−":"+")+'</span>'
+      +  '</button>';
+    if(open){
+      h += '<div class="acc-b">';
+      const editing = editEntry && editEntry.activityId===act.id ? editEntry : null;
+      h += entryForm(act, editing);
+      const past = entriesFor(act.id);
+      if(past.length){
+        h += '<div class="loghist"><h4>History</h4>';
+        past.slice(0,40).forEach(e=>{
+          const bits = act.fields.map(f=>{
+            const t = fieldText(f, e.values[f.id]);
+            return t ? '<b>'+esc(f.label)+'</b> '+esc(t) : null;
+          }).filter(Boolean);
+          const np = (e.problems||[]).length;
+          h += '<div class="logrow" data-e="'+e.id+'">'
+            +   '<div class="logrow-d">'+pretty(e.date)+'</div>'
+            +   '<div class="logrow-v">'+(bits.join(" · ")||"—")
+            +     (np?'<em>'+np+' problem'+(np===1?'':'s')+' logged</em>':'')
+            +     (e.notes?'<em class="n">'+esc(e.notes)+'</em>':'')+'</div>'
+            +   '<div class="logrow-a">'
+            +     '<button class="lg-edit" data-e="'+e.id+'">edit</button>'
+            +     '<button class="lg-del" data-e="'+e.id+'">×</button>'
+            +   '</div></div>';
+        });
+        h += '</div>';
+      }
+      h += '<button class="btn ghost sm" id="edit_'+act.id+'">Edit fields</button>';
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  h += '<div class="up"><button class="btn" id="lg-newact">+ New activity</button></div>';
+  return h;
+}
+
+/* ---- logs: wiring ---- */
+let openAcc = {};      // which accordion sections are open (not persisted)
+let editEntry = null;  // the entry currently loaded into a form for editing
+
+function wireAccordions(){
+  document.querySelectorAll("#fb .acc-h").forEach(b=>{
+    b.onclick = ()=>{
+      const k = b.dataset.acc;
+      openAcc[k] = !openAcc[k];
+      if(!openAcc[k] && editEntry) editEntry = null;
+      render();
+    };
+  });
+}
+
+function wireLogs(){
+  (S.activities||[]).forEach(act=>{
+    const idp = "lg_"+act.id;
+    const add = $(idp+"_addprob");
+    if(add) add.onclick = ()=>{
+      const box = $(idp+"_probs");
+      const i = box.querySelectorAll(".prow").length;
+      box.insertAdjacentHTML("beforeend", problemRow(idp, i, null));
+      wireProblemRows();
+    };
+    const save = $(idp+"_save");
+    if(save) save.onclick = ()=>{
+      const vals = {};
+      act.fields.forEach(f=>{ const v = readField(f, idp); if(v!=null) vals[f.id] = v; });
+      const notes = ($(idp+"_notes").value || "").trim();
+      const probs = act.climbs ? readProblems(idp) : [];
+      const date  = $(idp+"_date").value || todayYmd();
+      if(!Object.keys(vals).length && !notes && !probs.length){
+        toast("Nothing to save yet"); return;
+      }
+      S.journal = S.journal || [];
+      if(editEntry){
+        const t = S.journal.find(x=>x.id===editEntry.id);
+        if(t){ t.date=date; t.values=vals; t.problems=probs; t.notes=notes; }
+        editEntry = null;
+        toast("Entry updated");
+      }else{
+        S.journal.push({id:uid("e"), activityId:act.id, date, values:vals,
+                        problems:probs, notes, ts:Date.now()});
+        toast("Logged");
+      }
+      save2(); render();
+    };
+    const cancel = $(idp+"_cancel");
+    if(cancel) cancel.onclick = ()=>{ editEntry = null; render(); };
+    const ed = $("edit_"+act.id);
+    if(ed) ed.onclick = ()=>{ openActEditor(act.id); };
+  });
+
+  document.querySelectorAll("#fb .lg-edit").forEach(b=>{
+    b.onclick = ()=>{
+      editEntry = (S.journal||[]).find(x=>x.id===b.dataset.e) || null;
+      render();
+    };
+  });
+  document.querySelectorAll("#fb .lg-del").forEach(b=>{
+    b.onclick = ()=>{
+      const e = (S.journal||[]).find(x=>x.id===b.dataset.e);
+      if(!e) return;
+      if(!confirm("Delete the "+pretty(e.date)+" entry? This can't be undone.")) return;
+      S.journal = S.journal.filter(x=>x.id!==b.dataset.e);
+      if(editEntry && editEntry.id===b.dataset.e) editEntry = null;
+      save2(); render(); toast("Deleted");
+    };
+  });
+  const na = $("lg-newact");
+  if(na) na.onclick = ()=>{ openActEditor(null); };
+  wireProblemRows();
+}
+
+function wireProblemRows(){
+  document.querySelectorAll("#fb .prow").forEach(r=>{
+    const sc = r.querySelector(".p-scale"), gr = r.querySelector(".p-grade");
+    sc.onchange = ()=>{
+      const cur = gr.value;
+      gr.innerHTML = '<option value="">grade</option>'
+        + SCALES[sc.value].map(x=>'<option'+(x===cur?' selected':'')+'>'+x+'</option>').join("");
+    };
+    r.querySelector(".p-x").onclick = ()=>{ r.remove(); };
+  });
+  // grade fields on the main form switch their own option list too
+  document.querySelectorAll("#fb .gradepick .gs").forEach(s=>{
+    s.onchange = ()=>{
+      const g = s.parentNode.querySelector("select:not(.gs)");
+      const cur = g.value;
+      g.innerHTML = '<option value="">—</option>'
+        + SCALES[s.value].map(x=>'<option'+(x===cur?' selected':'')+'>'+x+'</option>').join("");
+    };
+  });
+}
+
+/* ---- activity editor ---- */
+let actEdit = null;
+function openActEditor(id){
+  const a = id ? activityById(id) : null;
+  actEdit = a ? JSON.parse(JSON.stringify(a))
+              : {id:uid("act"), name:"", climbs:false, created:todayYmd(), fields:[]};
+  actEdit._isNew = !a;
+  render();
+}
+function renderActEditor(){
+  const a = actEdit;
+  let h = '<div class="banner"><span class="eyebrow">'+(a._isNew?"New activity":"Edit activity")+'</span>'
+        + 'Fields are typed so they stay usable later — a number with a unit can be charted, free text can\'t.</div>';
+  h += '<div class="card"><div class="fields">';
+  h += '<div class="fld"><label>Activity name</label><input id="ae_name" value="'+esc(a.name)+'" placeholder="e.g. Board climbing"></div>';
+  h += '<label class="chk"><input type="checkbox" id="ae_climbs"'+(a.climbs?" checked":"")+'> Log individual problems as well as a summary</label>';
+  h += '</div>';
+  h += '<div class="fields" style="border-top:1px solid var(--rule)"><label style="font-family:var(--mono);font-size:9px;letter-spacing:0.19em;text-transform:uppercase;color:var(--pencil)">Fields</label>';
+  if(!a.fields.length) h += '<div class="empty" style="padding:4px 0">No fields yet — add from the presets below, or make your own.</div>';
+  a.fields.forEach((f,i)=>{
+    h += '<div class="fieldrow"><span class="fr-l">'+esc(f.label)+'</span>'
+      +  '<span class="fr-t">'+(FIELD_TYPES.find(t=>t.id===f.type)||{}).label+'</span>'
+      +  '<button class="fr-x" data-i="'+i+'">×</button></div>';
+  });
+  h += '</div>';
+  h += '<div class="fields" style="border-top:1px solid var(--rule)">'
+    +  '<label style="font-family:var(--mono);font-size:9px;letter-spacing:0.19em;text-transform:uppercase;color:var(--pencil)">Add a preset</label>'
+    +  '<div class="presets">'
+    +  PRESET_FIELDS.filter(p=>!a.fields.some(f=>f.id===p.id))
+         .map(p=>'<button class="pchip" data-p="'+p.id+'">'+esc(p.label)+'</button>').join("")
+    +  '</div></div>';
+  h += '<div class="fields" style="border-top:1px solid var(--rule)">'
+    +  '<label style="font-family:var(--mono);font-size:9px;letter-spacing:0.19em;text-transform:uppercase;color:var(--pencil)">Or make your own</label>'
+    +  '<div class="duo"><div class="fld"><input id="ae_flabel" placeholder="Field name"></div>'
+    +  '<div class="fld"><select id="ae_ftype">'+FIELD_TYPES.map(t=>'<option value="'+t.id+'">'+t.label+'</option>').join("")+'</select></div></div>'
+    +  '<div class="duo"><div class="fld"><input id="ae_funit" placeholder="Unit (optional)"></div>'
+    +  '<div class="fld"><input id="ae_fopts" placeholder="List options, comma separated"></div></div>'
+    +  '<button class="btn sm" id="ae_addfield">Add field</button></div>';
+  h += '<div class="actions">'
+    +  '<button class="btn primary" id="ae_save">Save activity</button>'
+    +  '<button class="btn ghost" id="ae_cancel">Cancel</button></div>';
+  if(!a._isNew) h += '<div class="fields" style="border-top:1px solid var(--rule)">'
+    +  '<button class="btn ghost" id="ae_del">Delete this activity and its entries</button></div>';
+  h += '</div>';
+  return h;
+}
+function wireActEditor(){
+  const a = actEdit;
+  document.querySelectorAll("#fb .pchip").forEach(b=>{
+    b.onclick = ()=>{
+      const p = PRESET_FIELDS.find(x=>x.id===b.dataset.p);
+      if(p) a.fields.push(JSON.parse(JSON.stringify(p)));
+      a.name = $("ae_name").value; a.climbs = $("ae_climbs").checked;
+      render();
+    };
+  });
+  document.querySelectorAll("#fb .fr-x").forEach(b=>{
+    b.onclick = ()=>{
+      a.fields.splice(+b.dataset.i,1);
+      a.name = $("ae_name").value; a.climbs = $("ae_climbs").checked;
+      render();
+    };
+  });
+  const af = $("ae_addfield");
+  if(af) af.onclick = ()=>{
+    const label = ($("ae_flabel").value||"").trim();
+    if(!label){ toast("Give the field a name"); return; }
+    const type = $("ae_ftype").value;
+    const unit = ($("ae_funit").value||"").trim();
+    const opts = ($("ae_fopts").value||"").split(",").map(x=>x.trim()).filter(Boolean);
+    const f = {id:uid("f"), label, type};
+    if(unit) f.unit = unit;
+    if(type==="select") f.options = opts.length ? opts : ["yes","no"];
+    a.fields.push(f);
+    a.name = $("ae_name").value; a.climbs = $("ae_climbs").checked;
+    render();
+  };
+  const sv = $("ae_save");
+  if(sv) sv.onclick = ()=>{
+    a.name = ($("ae_name").value||"").trim();
+    a.climbs = $("ae_climbs").checked;
+    if(!a.name){ toast("Give the activity a name"); return; }
+    S.activities = S.activities || [];
+    const i = S.activities.findIndex(x=>x.id===a.id);
+    const clean = JSON.parse(JSON.stringify(a)); delete clean._isNew;
+    if(i>=0) S.activities[i] = clean; else S.activities.push(clean);
+    openAcc["log:"+a.id] = true;
+    actEdit = null; save2(); render(); toast("Saved");
+  };
+  const cx = $("ae_cancel");
+  if(cx) cx.onclick = ()=>{ actEdit = null; render(); };
+  const dl = $("ae_del");
+  if(dl) dl.onclick = ()=>{
+    const n = entriesFor(a.id).length;
+    if(!confirm("Delete " + a.name + " and its " + n + " entr" + (n===1?"y":"ies") + "? This can't be undone.")) return;
+    S.activities = (S.activities||[]).filter(x=>x.id!==a.id);
+    S.journal    = (S.journal||[]).filter(x=>x.activityId!==a.id);
+    actEdit = null; save2(); render(); toast("Deleted");
+  };
+}
+
+/* ---- Programs tab: one accordion per program, ready for more than one ---- */
+function renderPrograms(){
+  let h = '';
+  const kToday = "prog:today", kAll = "prog:all", kRules = "prog:rules";
+  if(openAcc[kToday] === undefined) openAcc[kToday] = true;   // open on arrival
+
+  h += '<div class="acc'+(openAcc[kToday]?' open':'')+'">'
+    +  '<button class="acc-h" data-acc="'+kToday+'">'
+    +    '<span class="acc-n">'+PROGRAM.name+'</span>'
+    +    '<span class="acc-m">'+Math.min(doneCount()+1,SESSIONS.length)+' / '+SESSIONS.length+'</span>'
+    +    '<span class="acc-c">'+(openAcc[kToday]?"−":"+")+'</span>'
+    +  '</button>';
+  if(openAcc[kToday]) h += '<div class="acc-b">'+renderToday()+'</div>';
+  h += '</div>';
+
+  h += '<div class="acc'+(openAcc[kAll]?' open':'')+'">'
+    +  '<button class="acc-h" data-acc="'+kAll+'">'
+    +    '<span class="acc-n">All sessions</span><span class="acc-m">the full 8 weeks</span>'
+    +    '<span class="acc-c">'+(openAcc[kAll]?"−":"+")+'</span></button>';
+  if(openAcc[kAll]) h += '<div class="acc-b">'+renderProgramList()+'</div>';
+  h += '</div>';
+
+  h += '<div class="acc'+(openAcc[kRules]?' open':'')+'">'
+    +  '<button class="acc-h" data-acc="'+kRules+'">'
+    +    '<span class="acc-n">Standing rules</span><span class="acc-m">applies all block</span>'
+    +    '<span class="acc-c">'+(openAcc[kRules]?"−":"+")+'</span></button>';
+  if(openAcc[kRules]){
+    let r = '';
+    RULES.forEach(x=>{ r += '<div class="rule"><div class="rule-k">'+x[0]+'</div><div class="rule-v">'+x[1]+'</div></div>'; });
+    h += '<div class="acc-b">'+r+'</div>';
+  }
+  h += '</div>';
+
+  h += '<div class="up"><div class="addprog">'
+    +  '<button class="btn" id="pg-import">Import a program file</button>'
+    +  '<button class="btn ghost" id="pg-build" disabled>Build one here — coming soon</button>'
+    +  '<div class="cue" style="border:0;padding-top:10px">A program is data, not code: import a file and it '
+    +  'appears here alongside this one, with its own start date and schedule. No redeploy.</div>'
+    +  '</div></div>';
+  return h;
 }
 
 /* ============================== render ============================== */
@@ -928,7 +1737,7 @@ function advance(){
   if(T.phase==="prep"){ startPhase(T.i, "hold"); return; }
   if(T.phase==="hold"){
     CUE.release();
-    const d = S.drafts[c.date] || (S.drafts[c.date]=[]);
+    const d = S.drafts[draftKey(c.date)] || (S.drafts[draftKey(c.date)]=[]);
     d[T.i] = true; save();
     if(T.i+1 >= c.rows.length){ finishStack(); return; }
     startPhase(T.i, "rest"); return;
@@ -979,7 +1788,7 @@ function paintTimer(leftMs){
 function paintStack(){
   const stack = $("stack"); if(!stack) return;
   const c = ctxRows();
-  const draft = (c.date && S.drafts[c.date]) || [];
+  const draft = (c.date && S.drafts[draftKey(c.date)]) || [];
   stack.querySelectorAll(".set").forEach(el=>{
     const i = +el.dataset.i;
     el.dataset.on = draft[i] ? "true" : "false";
@@ -1020,7 +1829,7 @@ function wireTimer(){
 
 function renderRail(){
   const done = doneCount();
-  const missCount = Object.values(S.entries).filter(e=>e.status==="missed").length;
+  const missCount = Object.values(EN()).filter(e=>e.status==="missed").length;
   const N = SESSIONS.length, W = 320, H = 64, pad = 11;
   // the block drawn as a route: a dashed line with a station at every session
   const pts = [];
@@ -1082,14 +1891,14 @@ function renderRail(){
 function sessionSchedule(){
   const out = new Array(SESSIONS.length).fill(null);
   let i = 0;
-  Object.keys(S.entries).sort().forEach(d=>{
-    const e = S.entries[d];
+  Object.keys(EN()).sort().forEach(d=>{
+    const e = EN()[d];
     if(e.status==="done" && e.advances!==false){
       if(i < out.length) out[i] = {date:d, status:"done", entry:e};
       i++;
     }
   });
-  const free = slots(200).filter(d=>!S.entries[d]);
+  const free = slots(200).filter(d=>!EN()[d]);
   let k = 0;
   for(let j=i;j<out.length;j++){
     out[j] = {date: free[k++]||null, status:(j===i ? "current" : "upcoming")};
@@ -1193,7 +2002,7 @@ function specLine(def){
   return h;
 }
 function renderStack(def, mult, date){
-  const draft = S.drafts[date] || [];
+  const draft = S.drafts[draftKey(date)] || [];
   const rows = rowsFor(def, mult);
   const multi = (def.blocks||[]).length > 1;
   let h='<div class="startbar">'
@@ -1292,10 +2101,10 @@ function renderToday(){
   const t = todayYmd();
   const dayGap = daysBetween(t, p.date);
 
-  if(S.lastSkip && S.entries[S.lastSkip] && S.entries[S.lastSkip].status==="missed"){
+  if(PS().lastSkip && EN()[PS().lastSkip] && EN()[PS().lastSkip].status==="missed"){
     h += '<div class="banner skipped">'
       +  '<span class="eyebrow">Day skipped</span>'
-      +  '<b>'+pretty(S.lastSkip)+'</b> was skipped. Everything shifted to the next '
+      +  '<b>'+pretty(PS().lastSkip)+'</b> was skipped. Everything shifted to the next '
       +  'Mon/Wed/Fri — nothing was dropped from the program.'
       +  '<button class="btn undo" id="btn-undo-skip">Undo skip</button>'
       +  '</div>';
@@ -1341,7 +2150,7 @@ function renderToday(){
     + '</div>';
 
   // upcoming
-  const list = slots(120).filter(s=>!S.entries[s]).slice(1,4);
+  const list = slots(120).filter(s=>!EN()[s]).slice(1,4);
   if(list.length){
     h += '<div class="up"><h3>Coming up</h3>';
     list.forEach((s,i)=>{
@@ -1357,7 +2166,7 @@ function renderToday(){
   return h;
 }
 
-function renderProgram(){
+function renderProgramList(){
   const done = doneCount();
   let h = '<div class="sec">';
   PHASES.forEach(p=>{
@@ -1386,46 +2195,119 @@ function renderProgram(){
       + 'Your hands differ by <b>'+diff.toFixed(1)+'%</b> on 20mm. Add one extra set on the weaker side for the rest of the block.</div>';
   }
   h += '</div>';
-  h += '<div class="up"><h3>Standing rules</h3>';
-  RULES.forEach(r=>{
-    h += '<div class="rule"><div class="rule-k">'+r[0]+'</div><div class="rule-v">'+r[1]+'</div></div>';
-  });
-  h += '</div>';
   return h;
 }
-function renderHistory(){
-  const ds = Object.keys(S.entries).sort().reverse();
-  if(!ds.length) return '<div class="empty">Nothing logged yet. Your first session is Friday 24 Jul.</div>';
-  let h = '<div class="sec"><h3>Log</h3>';
-  ds.forEach(d=>{
-    const e = S.entries[d];
-    const nm = e.status==="missed" ? (SESSIONS[e.idx] ? SESSIONS[e.idx].name : "Session") : (e.name||"Session");
-    const detail = e.status==="missed" ? "skipped"
-      : [ e.loads ? ("L "+fmt(e.loads.L)+" / R "+fmt(e.loads.R)+" "+unit()) : null,
-          e.rpe ? ("RPE "+e.rpe) : null ].filter(Boolean).join(" · ");
-    h += '<div class="line '+(e.status==="missed"?"missed":"")+'">'
-      +  '<span class="d">'+pretty(d)+'</span>'
-      +  '<span class="t">'+nm+(detail?'<em>'+detail+'</em>':'')+(e.notes?'<em style="color:var(--dust)">'+esc(e.notes)+'</em>':'')+'</span>'
-      +  '<span class="r">'+(e.status==="missed"?"—":(e.advances===false?"re-entry":"#"+(e.idx+1)))+'</span></div>';
+function accSec(key, title, meta, body, openByDefault){
+  if(openByDefault && openAcc[key]===undefined) openAcc[key] = true;
+  const open = !!openAcc[key];
+  let h = '<div class="acc'+(open?' open':'')+'">'
+        + '<button class="acc-h" data-acc="'+key+'">'
+        +   '<span class="acc-n">'+title+'</span><span class="acc-m">'+meta+'</span>'
+        +   '<span class="acc-c">'+(open?"−":"+")+'</span></button>';
+  if(open) h += '<div class="acc-b">'+body()+'</div>';
+  return h + '</div>';
+}
+
+function dataCharts(){
+  let h = '';
+  [["Strength to weight", chartMaxes()],
+   ["Left / right asymmetry", chartAsym()],
+   ["Session RPE", chartRPE()],
+   ["Actual vs prescribed load", chartAdherence()]].forEach(([t,c])=>{
+    h += '<div class="chart-box"><div class="chart-t">'+t+'</div>'+c+'</div>';
   });
-  h += '</div>';
-  const total = ds.length, missed = ds.filter(d=>S.entries[d].status==="missed").length;
-  h += '<div class="up"><h3>Adherence</h3><div class="line"><span class="d"></span>'
-    + '<span class="t">'+(total-missed)+' completed, '+missed+' skipped</span>'
-    + '<span class="r">'+Math.round((total-missed)/total*100)+'%</span></div>';
-  const recent = slots(120).filter(s=>S.entries[s]).slice(-6);
-  const rm = recent.filter(s=>S.entries[s].status==="missed").length;
-  if(rm>=3) h += '<div class="banner warn" style="margin-top:14px"><span class="eyebrow">Pattern</span>'
-    + 'You\'ve skipped <b>'+rm+' of the last 6</b>. Three sessions a week may be the wrong dose right now — '
-    + 'two quality sessions beats three you resent. The program runs on completed sessions, so dropping to Mon/Thu just stretches it.</div>';
-  h += '</div>';
   return h;
 }
 
+function dataTests(){
+  const ts = (S.tests||[]).slice();
+  if(!ts.length) return '<div class="empty">No tests yet. Your first is session 4 — a 7s max on the 20mm block.</div>';
+  const byDate = {};
+  ts.forEach(t=>{ (byDate[t.date] = byDate[t.date] || []).push(t); });
+  let h = '';
+  Object.keys(byDate).sort().reverse().forEach(d=>{
+    const g = byDate[d];
+    h += '<div class="tgrp"><div class="tgrp-d">'+pretty(d)
+      +  (g[0].bw ? ' <span>bw '+fmt(g[0].bw)+' '+unit()+'</span>' : '')+'</div>';
+    g.forEach(t=>{
+      const sw = t.bw ? (t.load/t.bw).toFixed(2)+"x bw" : "";
+      h += '<div class="line"><span class="d">'+(t.hand==="both"?"both":t.hand)+'</span>'
+        +  '<span class="t">'+toolOf(t.tool).label+'<em>'+(t.protocol||"")+(t.note?' · '+esc(t.note):'')+'</em></span>'
+        +  '<span class="r">'+fmt(t.load)+' '+unit()+(sw?'<em>'+sw+'</em>':'')+'</span></div>';
+    });
+    h += '</div>';
+  });
+  return h;
+}
+
+function dataSessions(){
+  const en = EN();
+  const ds = Object.keys(en).sort().reverse();
+  if(!ds.length) return '<div class="empty">Nothing logged yet. Your first session is Friday 24 Jul.</div>';
+  let h = '';
+  ds.forEach(d=>{
+    const e = en[d];
+    const nm = e.status==="missed" ? (SESSIONS[e.idx] ? SESSIONS[e.idx].name : "Session") : (e.name||"Session");
+    const detail = e.status==="missed" ? "skipped"
+      : [ e.loads && (e.loads.L!=null||e.loads.R!=null)
+            ? ("L "+fmt(e.loads.L)+" / R "+fmt(e.loads.R)+" "+unit()) : null,
+          e.rpe ? ("RPE "+e.rpe) : null ].filter(Boolean).join(" · ");
+    h += '<div class="line '+(e.status==="missed"?"missed":"")+'">'
+      +  '<span class="d">'+pretty(d)+'</span>'
+      +  '<span class="t">'+nm+(detail?'<em>'+detail+'</em>':'')
+      +    (e.notes?'<em style="color:var(--pencil)">'+esc(e.notes)+'</em>':'')+'</span>'
+      +  '<span class="r">'+(e.status==="missed"?"—":(e.advances===false?"re-entry":"#"+(e.idx+1)))+'</span></div>';
+  });
+  const total = ds.length, missed = ds.filter(d=>en[d].status==="missed").length;
+  h += '<div class="line head" style="margin-top:8px;border-bottom:0">'
+    +  '<span class="d"></span><span class="t">'+(total-missed)+' completed, '+missed+' skipped</span>'
+    +  '<span class="r">'+Math.round((total-missed)/total*100)+'%</span></div>';
+  const recent = slots(120).filter(s=>en[s]).slice(-6);
+  const rm = recent.filter(s=>en[s].status==="missed").length;
+  if(rm>=3) h += '<div class="banner warn" style="margin-top:14px"><span class="eyebrow">Pattern</span>'
+    + 'You have skipped <b>'+rm+' of the last 6</b>. Three sessions a week may be the wrong dose right now — '
+    + 'two quality sessions beats three you resent. The program runs on completed sessions, so dropping to '
+    + 'two days a week just stretches it.</div>';
+  return h;
+}
+
+function dataActivity(act){
+  const es = entriesFor(act.id);
+  if(!es.length) return '<div class="empty">Nothing logged for this activity yet.</div>';
+  let h = '';
+  es.slice(0,60).forEach(e=>{
+    const bits = act.fields.map(f=>{
+      const t = fieldText(f, e.values[f.id]);
+      return t ? '<b>'+esc(f.label)+'</b> '+esc(t) : null;
+    }).filter(Boolean);
+    const np = (e.problems||[]).length;
+    h += '<div class="logrow" style="grid-template-columns:74px 1fr">'
+      +   '<div class="logrow-d">'+pretty(e.date)+'</div>'
+      +   '<div class="logrow-v">'+(bits.join(" · ")||"—")
+      +     (np ? '<em>'+(e.problems||[]).map(p=>esc(p.grade)+(p.sent?"":" ·proj")).join(", ")+'</em>' : '')
+      +     (e.notes?'<em class="n">'+esc(e.notes)+'</em>':'')+'</div></div>';
+  });
+  return h;
+}
+
+function renderHistory(){
+  let h = '';
+  h += accSec("data:charts", "Charts", "4 views", dataCharts, true);
+  h += accSec("data:tests", "Test log", (S.tests||[]).length+" results", dataTests);
+  h += accSec("data:prog", "Program history", PROGRAM.name, dataSessions);
+  (S.activities||[]).forEach(act=>{
+    const n = entriesFor(act.id).length;
+    h += accSec("data:act:"+act.id, act.name, n+" logged", ()=>dataActivity(act));
+  });
+  h += '<div class="up"><div class="cue" style="border:0">'
+    +  'Everything here exports as CSV from Settings — one file per table, ready for a pivot or a proper BI tool.'
+    +  '</div></div>';
+  return h;
+}
 function renderSetup(){
   return `
   <div class="sec">
-    <div class="fld"><label>Start date (first session)</label><input type="date" id="s_start" value="${S.startDate}"></div>
+    <div class="fld"><label>Start date (first session)</label><input type="date" id="s_start" value="${PS().startDate}"></div>
     <div class="fld" style="margin-top:14px">
       <label>Units — converts everything already logged</label>
       <div class="seg" role="group" aria-label="Weight units">
@@ -1465,18 +2347,23 @@ function renderSetup(){
     </div>
   </div>
   <div class="up">
-    <h3>Override maxes</h3>
+    <h3>Record a test by hand</h3>
+    <div class="cue" style="border:0;padding:0 0 10px">
+      Use this if you tested outside a program session. Every entry is dated and kept —
+      nothing overwrites anything, so the charts keep the full history.
+    </div>
+    <div class="fld"><label>Date of test</label><input type="date" id="m_date" value="${todayYmd()}"></div>
     <div class="duo">
-      <div class="fld"><label>20mm L</label><input type="number" step="any" id="m_b20L" value="${S.maxes.block20L??""}"></div>
-      <div class="fld"><label>20mm R</label><input type="number" step="any" id="m_b20R" value="${S.maxes.block20R??""}"></div>
+      <div class="fld"><label>20mm L</label><input type="number" step="any" id="m_b20L" placeholder="—"></div>
+      <div class="fld"><label>20mm R</label><input type="number" step="any" id="m_b20R" placeholder="—"></div>
     </div>
     <div class="duo" style="margin-top:11px">
-      <div class="fld"><label>10mm L</label><input type="number" step="any" id="m_b10L" value="${S.maxes.block10L??""}"></div>
-      <div class="fld"><label>10mm R</label><input type="number" step="any" id="m_b10R" value="${S.maxes.block10R??""}"></div>
+      <div class="fld"><label>10mm L</label><input type="number" step="any" id="m_b10L" placeholder="—"></div>
+      <div class="fld"><label>10mm R</label><input type="number" step="any" id="m_b10R" placeholder="—"></div>
     </div>
-    <div class="fld" style="margin-top:11px"><label>Hang total (bodyweight + added)</label><input type="number" step="any" id="m_hang" value="${S.maxes.hangTotal??""}"></div>
+    <div class="fld" style="margin-top:11px"><label>Hang total (bodyweight + added)</label><input type="number" step="any" id="m_hang" placeholder="—"></div>
     <div class="actions" style="padding-left:0;padding-right:0;border-top:1px solid var(--line-soft);margin-top:6px">
-      <button class="btn" id="btn-save-max">Save maxes</button>
+      <button class="btn" id="btn-save-max">Record test</button>
     </div>
   </div>`;
 }
@@ -1486,20 +2373,95 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 function renderFoot(){
   $("foot").innerHTML =
     '<button id="f-undo">Undo last entry</button>'+
-    '<button id="f-export">Export JSON</button>'+
+    '<button id="f-export">Export backup</button>'+
+    '<button id="f-import">Restore backup</button>'+
+    '<button id="f-csv">Export CSV</button>'+
     '<button id="f-reset">Reset everything</button>';
   $("f-undo").onclick = ()=>{
-    const ds = Object.keys(S.entries).sort();
+    const ds = Object.keys(EN()).sort();
     if(!ds.length) return toast("Nothing to undo");
     const last = ds[ds.length-1];
-    delete S.entries[last];
+    dropEntry(last);
     save(); render(); toast("Removed "+pretty(last));
   };
   $("f-export").onclick = ()=>{
     const blob = new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
     const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob); a.download="finger-block-log.json"; a.click();
+    a.href=URL.createObjectURL(blob); a.download="finger-block-"+todayYmd()+".json"; a.click();
     toast("Exported");
+  };
+  // one file per table — a pivot table or a BI tool wants tables, not one wide sheet
+  $("f-csv").onclick = ()=>{
+    const q = v => (v==null ? "" : /[",\n]/.test(String(v)) ? '"'+String(v).replace(/"/g,'""')+'"' : String(v));
+    const csv = (cols, rows) => cols.join(",")+"\n"+rows.map(r=>cols.map(c=>q(r[c])).join(",")).join("\n");
+    const files = [
+      ["tests", csv(["date","program","tool","hand","load","added","bw","protocol","note"], S.tests||[])],
+      ["sessions", csv(["date","program","idx","status","name","rpe","notes","loadL","loadR"],
+          (S.log||[]).map(e=>Object.assign({}, e, {
+            loadL:e.loads?e.loads.L:null, loadR:e.loads?e.loads.R:null })))],
+      ["logs", csv(["date","activity","field","value","unit","notes"],
+          (S.journal||[]).reduce((acc,e)=>{
+            const a = activityById(e.activityId) || {name:e.activityId, fields:[]};
+            (a.fields||[]).forEach(f=>{
+              const v = e.values[f.id];
+              if(v==null) return;
+              acc.push({date:e.date, activity:a.name, field:f.label,
+                        value: f.type==="grade" ? v.grade : v,
+                        unit:  f.type==="grade" ? v.scale : (f.unit||""),
+                        notes: e.notes||""});
+            });
+            return acc;
+          }, []))],
+      ["climbs", csv(["date","activity","scale","grade","attempts","sent"],
+          (S.journal||[]).reduce((acc,e)=>{
+            const a = activityById(e.activityId) || {name:e.activityId};
+            (e.problems||[]).forEach(p=>acc.push({date:e.date, activity:a.name,
+              scale:p.scale, grade:p.grade, attempts:p.attempts, sent:p.sent?1:0}));
+            return acc;
+          }, []))]
+    ];
+    files.forEach(([name, body], i)=>{
+      setTimeout(()=>{
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([body], {type:"text/csv"}));
+        a.download = "finger-block-"+name+"-"+todayYmd()+".csv";
+        a.click();
+      }, i*300);
+    });
+    toast("Exported "+files.length+" CSV files");
+  };
+  $("f-import").onclick = ()=>{
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "application/json,.json";
+    inp.onchange = ()=>{
+      const f = inp.files && inp.files[0];
+      if(!f) return;
+      const r = new FileReader();
+      r.onload = ()=>{
+        let d;
+        try{ d = JSON.parse(r.result); }
+        catch(e){ toast("Not a readable backup file"); return; }
+        if(!d || typeof d !== "object" || (!d.log && !d.entries)){
+          toast("That isn't a Finger Block backup"); return;
+        }
+        const n = (d.log ? d.log.length : Object.keys(d.entries||{}).length);
+        if(!confirm("Replace everything on this device with this backup? It holds "
+            + n + " logged session" + (n===1?"":"s") + ". What's here now will be lost.")) return;
+        S = Object.assign(JSON.parse(JSON.stringify(DEFAULT)), migrate(d));
+        S.log      = S.log      || [];
+        S.tests    = S.tests    || [];
+        S.programs = S.programs || {};
+        S.drafts   = S.drafts   || {};
+        S.journal  = S.journal  || [];
+        if(!S.activities || !S.activities.length) S.activities = defaultActivities();
+        PS(); refreshMaxes();
+        stopTimer();
+        save(); render();
+        toast("Restored "+n+" session"+(n===1?"":"s"));
+      };
+      r.readAsText(f);
+    };
+    inp.click();
   };
   $("f-reset").onclick = ()=>{
     if(!confirm("Delete all logged sessions and maxes? This can't be undone.")) return;
@@ -1510,14 +2472,18 @@ function renderFoot(){
 
 function render(){
   renderRail();
-  ["today","program","history","setup"].forEach(t=>{
-    $("tab-"+t).setAttribute("aria-selected", String(t===tab));
+  ["programs","logs","data","settings"].forEach(t=>{
+    const el = $("tab-"+t);
+    if(el) el.setAttribute("aria-selected", String(t===tab));
   });
   const v = $("view");
-  if(tab==="today")   v.innerHTML = renderToday();
-  if(tab==="program") v.innerHTML = renderProgram();
-  if(tab==="history") v.innerHTML = renderHistory();
-  if(tab==="setup")   v.innerHTML = renderSetup();
+  if(actEdit)              v.innerHTML = renderActEditor();
+  else if(tab==="programs") v.innerHTML = renderPrograms();
+  else if(tab==="logs")     v.innerHTML = renderLogs();
+  else if(tab==="data")     v.innerHTML = renderHistory();
+  else if(tab==="settings") v.innerHTML = renderSetup();
+  wireAccordions();
+  if(actEdit) wireActEditor(); else if(tab==="logs") wireLogs();
   wire();
 }
 
@@ -1536,7 +2502,7 @@ function wire(){
     btn.onclick = (ev)=>{
       ev.stopPropagation();
       const i = +btn.dataset.i;
-      const d = S.drafts[p.date] || (S.drafts[p.date]=[]);
+      const d = S.drafts[draftKey(p.date)] || (S.drafts[draftKey(p.date)]=[]);
       d[i] = !d[i];
       if(T.ready===i) T.ready = null;
       save(); paintStack();
@@ -1544,14 +2510,14 @@ function wire(){
   });
   const bu = $("btn-undo-skip");
   if(bu) bu.onclick = ()=>{
-    const d = S.lastSkip;
-    if(d && S.entries[d] && S.entries[d].status==="missed") delete S.entries[d];
-    S.lastSkip = null;
+    const d = PS().lastSkip;
+    if(d && EN()[d] && EN()[d].status==="missed") dropEntry(d);
+    PS().lastSkip = null;
     save(); render(); toast("Skip undone — back to "+pretty(d));
   };
   const bs = $("btn-start");
   if(bs) bs.onclick = ()=>{
-    const d = S.drafts[p.date] || [];
+    const d = S.drafts[draftKey(p.date)] || [];
     const rows = ctxRows().rows;
     let i = 0; while(i < rows.length && d[i]) i++;
     if(i >= rows.length){ toast("Every set is already ticked"); return; }
@@ -1561,7 +2527,7 @@ function wire(){
   if(ba) ba.onclick = ()=> setAuto(!S.autoAdvance);
   const bc = $("btn-clear");
   if(bc) bc.onclick = ()=>{
-    delete S.drafts[p.date]; save(); paintStack(); toast("Ticks cleared");
+    delete S.drafts[draftKey(p.date)]; save(); paintStack(); toast("Ticks cleared");
   };
   paintStack();
 
@@ -1579,15 +2545,15 @@ function wire(){
     const b20L=num("f_b20L"), b20R=num("f_b20R");
     const b10L=num("f_b10L"), b10R=num("f_b10R");
     const added=num("f_added");
-    if(b20L!=null) S.maxes.block20L=b20L;
-    if(b20R!=null) S.maxes.block20R=b20R;
-    if(b10L!=null) S.maxes.block10L=b10L;
-    if(b10R!=null) S.maxes.block10R=b10R;
-    if(added!=null && S.bodyweight!=null) S.maxes.hangTotal = S.bodyweight + added;
-    // first time each max is set, keep it as baseline
-    ["block20L","block20R","block10L","block10R","hangTotal"].forEach(k=>{
-      if(S.baseline[k]==null && S.maxes[k]!=null) S.baseline[k]=S.maxes[k];
-    });
+    // each test result is its own dated record — bodyweight and protocol travel
+    // with it, because a load means nothing without them six months later
+    const tbw = S.bodyweight;
+    if(b20L!=null) addTest({tool:"block20", hand:"L", load:b20L, bw:tbw, protocol:"7s half crimp", date:pl.date});
+    if(b20R!=null) addTest({tool:"block20", hand:"R", load:b20R, bw:tbw, protocol:"7s half crimp", date:pl.date});
+    if(b10L!=null) addTest({tool:"block10", hand:"L", load:b10L, bw:tbw, protocol:"7s half crimp", date:pl.date});
+    if(b10R!=null) addTest({tool:"block10", hand:"R", load:b10R, bw:tbw, protocol:"7s half crimp", date:pl.date});
+    if(added!=null && tbw!=null)
+      addTest({tool:"hang", hand:"both", load:tbw+added, added, bw:tbw, protocol:"10s half crimp", date:pl.date});
 
     if((def.kind==="test20"||def.kind==="test10"||def.kind==="testhang") &&
         b20L==null && b10L==null && added==null){
@@ -1595,9 +2561,9 @@ function wire(){
     }
 
     S.snap = null;
-    S.entries[pl.date]=e;
-    S.lastSkip = null;
-    delete S.drafts[pl.date];
+    putEntry(pl.date, e);
+    PS().lastSkip = null;
+    delete S.drafts[draftKey(pl.date)];
     stopTimer();
     save(); render(); toast("Logged");
   };
@@ -1605,16 +2571,16 @@ function wire(){
   const miss = $("btn-miss");
   if(miss) miss.onclick = ()=>{
     const pl = currentPlan();
-    S.entries[pl.date] = {status:"missed", idx:pl.idx};
-    S.lastSkip = pl.date;
-    delete S.drafts[pl.date];
+    putEntry(pl.date, {status:"missed", idx:pl.idx});
+    PS().lastSkip = pl.date;
+    delete S.drafts[draftKey(pl.date)];
     stopTimer();
     save(); render(); toast("Day skipped — schedule moved on");
   };
 
   const ss = $("btn-save-setup");
   if(ss) ss.onclick = ()=>{
-    S.startDate = $("s_start").value || S.startDate;
+    PS().startDate = $("s_start").value || PS().startDate;
     S.increment = num("s_inc") || 1.25;
     S.snap = null;
     S.tare = num("s_tare") || 0;
@@ -1636,27 +2602,41 @@ function wire(){
   const sm = $("btn-save-max");
   if(sm) sm.onclick = ()=>{
     S.snap = null;
-    S.maxes.block20L=num("m_b20L"); S.maxes.block20R=num("m_b20R");
-    S.maxes.block10L=num("m_b10L"); S.maxes.block10R=num("m_b10R");
-    S.maxes.hangTotal=num("m_hang");
-    ["block20L","block20R","block10L","block10R","hangTotal"].forEach(k=>{
-      if(S.baseline[k]==null && S.maxes[k]!=null) S.baseline[k]=S.maxes[k];
-    });
-    save(); render(); toast("Maxes updated");
+    const dt = $("m_date").value || todayYmd();
+    const mbw = S.bodyweight;
+    let n = 0;
+    const rec = (tool,hand,v,proto)=>{ if(v==null) return; n++;
+      addTest({tool, hand, load:v, bw:mbw, protocol:proto, date:dt, note:"entered by hand"}); };
+    rec("block20","L",num("m_b20L"),"7s half crimp");
+    rec("block20","R",num("m_b20R"),"7s half crimp");
+    rec("block10","L",num("m_b10L"),"7s half crimp");
+    rec("block10","R",num("m_b10R"),"7s half crimp");
+    rec("hang","both",num("m_hang"),"10s half crimp");
+    if(!n){ toast("Nothing to record"); return; }
+    save(); render(); toast("Recorded "+n+" result"+(n===1?"":"s"));
   };
 }
 
-["today","program","history","setup"].forEach(t=>{
-  $("tab-"+t).onclick = ()=>{ tab=t; render(); };
+["programs","logs","data","settings"].forEach(t=>{
+  const el = $("tab-"+t);
+  if(el) el.onclick = ()=>{ tab=t; actEdit=null; editEntry=null; render(); };
 });
 
 /* ============================== boot ============================== */
 (async function(){
-  const stored = await load();
+  const raw = await load();
+  const wasOld = !!(raw && raw.v !== 3);   // check BEFORE migrating, not after
+  const stored = migrate(raw);
   S = stored ? Object.assign(JSON.parse(JSON.stringify(DEFAULT)), stored) : JSON.parse(JSON.stringify(DEFAULT));
-  S.maxes = Object.assign({}, DEFAULT.maxes, S.maxes||{});
-  S.baseline = Object.assign({}, DEFAULT.baseline, S.baseline||{});
-  S.entries = S.entries||{}; S.drafts = S.drafts||{};
+  S.log      = S.log      || [];
+  S.tests    = S.tests    || [];
+  S.programs = S.programs || {};
+  S.drafts   = S.drafts   || {};
+  S.journal  = S.journal  || [];
+  if(!S.activities || !S.activities.length) S.activities = defaultActivities();
+  PS();                 // make sure this program has its own state block
+  refreshMaxes();       // maxes are a cache over S.tests, never trusted from storage
+  if(wasOld) save();                     // persist the migration once
   renderFoot();
   wireTimer();
   render();

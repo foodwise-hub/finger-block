@@ -1,4 +1,4 @@
-const CACHE = "fingerblock-v11";
+const CACHE = "fingerblock-wf-v1";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {

@@ -20,6 +20,7 @@ The app is structured around four tabs:
 - `deploy.sh` — deploy script (auto-increments the sw.js cache version and pushes)
 
 ## Critical rules
+- Before writing or changing any program-builder, session-logging, or progression code, read `DATA-MODEL.md`. It is the schema spec — do not invent structure that contradicts it.
 - **No build step, no framework, no bundler.** Don't introduce React, npm packages, or a build process. Keep it plain HTML/CSS/JS that runs by opening the file or serving it statically.
 - **Every time `index.html` changes, bump the cache name in `sw.js`** (e.g. `fingerblock-v5` → `fingerblock-v6`). Without this, the service worker keeps serving the old cached version and changes won't appear to the user. `deploy.sh` may already automate this — check before doing it manually.
 - **User data lives in `localStorage`**, key `fingerblock:v1`. Never move this to a server or external DB without an explicit request — it's a deliberate local-first design choice.

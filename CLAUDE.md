@@ -41,4 +41,4 @@ Andreas may be moving styling toward CSS custom properties (design tokens) in a 
 
 ## Working style
 - Confirm the exact change before making it, if there's any ambiguity.
-- After any meaningful change, remind Andreas to update `PROJECT-NOTES.md` (used for the separate Claude Projects knowledge base) if the change affects scope, features, or direction — that file is not auto-synced and needs manual re-upload.
+- After any meaningful change, remind Andreas to update `PROJECT-NOTES.md` (lives in this repo, used for the separate Claude Projects knowledge base) if the change affects scope, features, or direction. Update it here first, then manually re-upload it to the Claude Project — it is not auto-synced.

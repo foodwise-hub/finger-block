@@ -435,6 +435,10 @@
   .tprog{width:min(68vw,300px);height:3px;background:var(--line);margin-top:var(--s6);border-radius:2px;overflow:hidden;}
   .tprog i{display:block;height:100%;width:0;background:var(--gold);transition:width .1s linear;}
   .tover.rest .tprog i{background:var(--green);}
+  /* jump-rope timer: breaks read as red, work intervals stay the default gold accent */
+  .tover.brk .tphase{color:var(--red);}
+  .tover.brk .tnum{color:var(--red);}
+  .tover.brk .tprog i{background:var(--red);}
   @keyframes tpulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.07);opacity:.7;}}
   .tover.closing .tnum{color:var(--alarm);animation:tpulse .5s ease-in-out infinite;}
   .tover.closing .tphase{color:var(--alarm);}
@@ -624,6 +628,22 @@
     <button id="t-skip">Skip</button>
     <button id="t-add">+30s</button>
     <button id="t-stop" class="stop">Close</button>
+  </div>
+</div>
+
+<div class="tover" id="jrover" aria-live="polite">
+  <div class="ttop">
+    <div class="tsession" id="jr-tsession">Jump Rope — 30 min</div>
+  </div>
+  <div class="tset" id="jr-tset">Set 1 of 4</div>
+  <div class="tedge" id="jr-telapsed">Elapsed 0:00 / 30:00</div>
+  <div class="tphase" id="jr-tphase">Regular jump</div>
+  <div class="tnum" id="jr-tnum">60</div>
+  <div class="tprog"><i id="jr-tfill"></i></div>
+  <div class="tctrl">
+    <button id="jr-pause">Pause</button>
+    <button id="jr-skip">Skip</button>
+    <button id="jr-stop" class="stop">End</button>
   </div>
 </div>
 
@@ -823,6 +843,45 @@ const PROGRAM = {
 };
 const CUR = PROGRAM.id;
 
+/* ---- Jump Rope — 30 min ----
+   Not a multi-week program like PROGRAM above: no SESSIONS array, no PHASES,
+   no start/end date. It's one repeatable workout you start whenever, logged
+   the same way each time. See DATA-MODEL.md "Program run" — end_date stays
+   null here on purpose; status just stays "active" until archived by hand. */
+const JR_PROGRAM = { id:"jump-rope-30", name:"Jump Rope — 30 min" };
+const JR_ID = JR_PROGRAM.id;
+const JR_SETS = 4;
+const JR_TOTAL_SEC = 30*60;                                  // 1800 — whole session
+const JR_INTERVALS = [                                       // one set, in order
+  {name:"Regular jump",           kind:"work", sec:60},
+  {name:"Break",                  kind:"rest", sec:10},
+  {name:"Left foot / right foot", kind:"work", sec:60},
+  {name:"Break",                  kind:"rest", sec:10},
+  {name:"Double jump — every 2nd",kind:"work", sec:60},
+  {name:"Break",                  kind:"rest", sec:10},
+  {name:"Sway feet",              kind:"work", sec:60},
+  {name:"Break",                  kind:"rest", sec:10},
+  {name:"Regular jump",           kind:"work", sec:60},
+  {name:"Break",                  kind:"rest", sec:10},
+  {name:"Left foot / right foot", kind:"work", sec:60}
+];
+const JR_SET_SEC   = JR_INTERVALS.reduce((a,b)=>a+b.sec,0);   // 410 = 6:50
+const JR_FIXED_SEC = JR_SET_SEC * JR_SETS;                    // 1640 = 27:20
+const JR_FREE_SEC  = JR_TOTAL_SEC - JR_FIXED_SEC;              // 160 = 2:40, informational
+// All 4 sets flattened into one ordered timeline with cumulative start/end
+// offsets, so "what's playing right now" is a single lookup from elapsed
+// seconds — see jrPhaseAt(). That's what keeps the countdown drift-free.
+const JR_SEQ = [];
+(function(){
+  let t = 0;
+  for(let s=1; s<=JR_SETS; s++){
+    JR_INTERVALS.forEach(iv=>{
+      JR_SEQ.push({name:iv.name, kind:iv.kind, sec:iv.sec, set:s, from:t, to:t+iv.sec});
+      t += iv.sec;
+    });
+  }
+})();
+
 function PS(){                       // per-program state
   S.programs = S.programs || {};
   if(!S.programs[CUR]) S.programs[CUR] = {startDate:"2026-07-24", lastSkip:null, archived:false};
@@ -950,7 +1009,7 @@ let selStation = null;
 let lastActivePts = [];   // [[x,y],...] in viewBox units, refreshed each renderRail()
 let progSwitchOpen = false;
 let selectedProgramSlot = 0;
-const PROGRAM_SLOTS = [ {id:PROGRAM.id, name:PROGRAM.name}, null, null, null, null ];
+const PROGRAM_SLOTS = [ {id:PROGRAM.id, name:PROGRAM.name}, {id:JR_PROGRAM.id, name:JR_PROGRAM.name}, null, null, null ];
 function trunc20(s){ return s.length>20 ? s.slice(0,19)+"…" : s; }
 function activeIdx(){
   const d = doneCount();
@@ -1728,7 +1787,96 @@ function renderProgSwitch(){
   });
 }
 
+/* ---- Jump Rope program: a workout card + timer, not a topo route.
+   No SESSIONS/PHASES index to walk — every visit shows the same workout,
+   with a running log underneath. See renderPrograms() for the slot switch. */
+function jrLogs(){
+  return (S.log||[]).filter(e=>e.program===JR_ID)
+    .slice().sort((a,b)=> a.date<b.date ? 1 : a.date>b.date ? -1 : 0); // newest first
+}
+function jrStatsBlock(){
+  const logs = jrLogs();
+  return {n:logs.length, last: logs.length ? logs[0].date : null};
+}
+function renderJumpRopeWorkoutBody(){
+  let h = '<div class="rule"><div class="rule-k">Structure</div>'
+    +     '<div class="rule-v">4 sets, back to back, then free jumping to fill out 30 minutes.</div></div>';
+  JR_INTERVALS.forEach((iv,i)=>{
+    h += '<div class="rule"><div class="rule-k">'+(i+1)+'. '+esc(iv.name)+'</div>'
+       + '<div class="rule-v">'+iv.sec+'s'+(iv.kind==="rest"?' · break':'')+'</div></div>';
+  });
+  h += '<div class="rule"><div class="rule-k">Per set</div><div class="rule-v">'+mmss(JR_SET_SEC*1000)+'</div></div>'
+     + '<div class="rule"><div class="rule-k">4 sets</div><div class="rule-v">'+mmss(JR_FIXED_SEC*1000)+'</div></div>'
+     + '<div class="rule"><div class="rule-k">Then — free jump</div>'
+     +   '<div class="rule-v">counts up until the session reaches 30:00 (about '+mmss(JR_FREE_SEC*1000)+' more)</div></div>';
+  return h;
+}
+function renderJumpRopeHistoryBody(){
+  const logs = jrLogs();
+  if(!logs.length) return '<div class="empty">No sessions logged yet.</div>';
+  let h = '';
+  logs.forEach(e=>{
+    const mins = e.durationMinutes!=null ? e.durationMinutes : Math.round((e.durationSec||0)/60);
+    const bits = [mins+" min", e.setsCompleted+" of "+JR_SETS+" sets", e.finished ? "finished" : "ended early"];
+    if(e.rpe!=null) bits.push("RPE "+e.rpe);
+    h += '<div class="past-log"><div class="k">'+pretty(e.date)+'</div>'
+       + '<div class="v">'+bits.join(' · ')+'</div>'
+       + (e.notes ? '<div class="note">'+esc(e.notes)+'</div>' : '')
+       + '</div>';
+  });
+  return h;
+}
+function renderJumpRopeProgram(){
+  const stats = jrStatsBlock();
+  const kWorkout = "jr:workout", kHistory = "jr:history";
+  let h = '';
+
+  h += '<div class="card"><div class="card-head">'
+    +   '<div class="row1"><h2>'+esc(JR_PROGRAM.name)+'</h2></div>'
+    +   '<div class="eyebrow">'+(stats.n
+          ? stats.n+' session'+(stats.n===1?"":"s")+' logged · last '+pretty(stats.last)
+          : 'Not started yet')+'</div>'
+    +   '<div class="cue">4 sets of jump-rope intervals, then free jumping to fill out 30 minutes. '
+    +   'Same workout every time — start it whenever.</div>'
+    + '</div>';
+
+  if(JT_RESULT){
+    const r = JT_RESULT;
+    h += '<div class="fields">'
+      +   '<div class="fld"><label>Result</label><div class="v">'
+      +     (r.finished ? "Finished the full 30:00" : "Ended early")+' · '+mmss(r.durationSec*1000)
+      +     ' · '+r.setsCompleted+' of '+JR_SETS+' sets</div></div>'
+      +   '<div class="fld"><label>How it felt (RPE 1–10)</label><input type="number" step="any" min="1" max="10" id="jr_rpe"></div>'
+      +   '<div class="fld"><label>Notes</label><textarea id="jr_notes" placeholder="Anything worth remembering"></textarea></div>'
+      + '</div>'
+      + '<div class="actions">'
+      +   '<button class="btn primary" id="jr-save-log">Save log</button>'
+      +   '<button class="btn skip" id="jr-discard-log">Discard</button>'
+      + '</div>';
+  } else {
+    h += '<div class="actions"><button class="btn primary" id="jr-start">Start workout</button></div>';
+  }
+  h += '</div>';
+
+  h += '<div class="acc'+(openAcc[kWorkout]?' open':'')+'">'
+    +  '<button class="acc-h" data-acc="'+kWorkout+'">'
+    +    '<span class="acc-n">This workout</span><span class="acc-m">4 sets · 30 min</span>'
+    +    '<span class="acc-c">'+(openAcc[kWorkout]?"−":"+")+'</span></button>';
+  if(openAcc[kWorkout]) h += '<div class="acc-b">'+renderJumpRopeWorkoutBody()+'</div>';
+  h += '</div>';
+
+  h += '<div class="acc'+(openAcc[kHistory]?' open':'')+'">'
+    +  '<button class="acc-h" data-acc="'+kHistory+'">'
+    +    '<span class="acc-n">History</span><span class="acc-m">'+stats.n+' logged</span>'
+    +    '<span class="acc-c">'+(openAcc[kHistory]?"−":"+")+'</span></button>';
+  if(openAcc[kHistory]) h += '<div class="acc-b">'+renderJumpRopeHistoryBody()+'</div>';
+  h += '</div>';
+
+  return h;
+}
+
 function renderPrograms(){
+  if(selectedProgramSlot===1) return renderJumpRopeProgram();
 
   const usedSlots = PROGRAM_SLOTS.filter(Boolean).length;
   if(usedSlots===0){
@@ -2004,6 +2152,147 @@ function wireTimer(){
   $("t-skip").onclick  = ()=>{ if(T.on) advance(); };
   $("t-add").onclick   = ()=>{ if(!T.on) return; T.endsAt += 30000; T.dur += 30000; paintTimer(); };
   $("t-stop").onclick  = ()=>{ stopTimer(); };
+}
+
+/* ============================== jump rope timer ==============================
+   Independent of T above — its own overlay (#jrover), its own state. Runs for
+   up to 30 real minutes, so it's built to survive backgrounding without
+   drifting: every tick recomputes elapsed time from Date.now() against a
+   stored start timestamp, never by accumulating setInterval ticks. Pausing
+   and skipping just adjust that formula (pausedMs, skipMs) rather than
+   touching a countdown directly. */
+let JT = null;         // {startedAt, pausedMs, pauseStartedAt, skipMs, lastBeepSec}
+let jrInterval = null;
+let JT_RESULT = null;  // set by jrFinish(), cleared once the session is logged or discarded
+
+// Always shows M:SS, even under a minute — mmss() drops the "0:" there,
+// which reads fine for a single big countdown but not next to "/ 30:00".
+function jrClock(ms){
+  const s = Math.max(0, Math.round(ms/1000));
+  return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+}
+function jrElapsedMs(){
+  if(!JT) return 0;
+  const pausedNow = JT.pauseStartedAt ? (Date.now()-JT.pauseStartedAt) : 0;
+  return (Date.now() - JT.startedAt) - JT.pausedMs - pausedNow + JT.skipMs;
+}
+function jrPhaseAt(elapsedSec){
+  if(elapsedSec < JR_FIXED_SEC){
+    const iv = JR_SEQ.find(x=> elapsedSec>=x.from && elapsedSec<x.to) || JR_SEQ[JR_SEQ.length-1];
+    return {free:false, iv, left: Math.max(0, iv.to-elapsedSec)};
+  }
+  return {free:true};
+}
+function jrSetsCompletedAt(elapsedSec){
+  let completed = 0;
+  for(let s=1; s<=JR_SETS; s++){
+    const ivs = JR_SEQ.filter(x=>x.set===s);
+    if(elapsedSec >= ivs[ivs.length-1].to) completed = s;
+  }
+  return completed;
+}
+function jrPaint(elapsedSecArg, phArg){
+  if(!JT) return;
+  const elapsedSec = elapsedSecArg!=null ? elapsedSecArg : jrElapsedMs()/1000;
+  const ph = phArg || jrPhaseAt(elapsedSec);
+  const curSet = ph.free ? JR_SETS : ph.iv.set;
+  $("jr-tset").textContent = "Set "+curSet+" of "+JR_SETS;
+  $("jr-telapsed").textContent = "Elapsed "+jrClock(Math.max(0,elapsedSec)*1000)+" / "+jrClock(JR_TOTAL_SEC*1000);
+  const over = $("jrover");
+  const onBreak = !ph.free && ph.iv.kind==="rest";
+  over.classList.toggle("brk", onBreak);
+  over.classList.toggle("closing", onBreak && ph.left<=3);
+  if(ph.free){
+    $("jr-tphase").textContent = "Free jump — cooldown";
+    $("jr-tnum").textContent = mmss(Math.max(0,elapsedSec)*1000);   // counts UP
+    $("jr-tfill").style.width = Math.min(100,(elapsedSec/JR_TOTAL_SEC)*100)+"%";
+    $("jr-skip").style.display = "none";
+  } else {
+    $("jr-tphase").textContent = onBreak ? "Break" : ph.iv.name;
+    $("jr-tnum").textContent = mmss(Math.max(0,ph.left)*1000);      // counts DOWN
+    $("jr-tfill").style.width = (100 - (ph.left/ph.iv.sec)*100)+"%";
+    $("jr-skip").style.display = "";
+  }
+  $("jr-pause").textContent = JT.pauseStartedAt ? "Resume" : "Pause";
+  $("jr-pause").classList.toggle("pause", !!JT.pauseStartedAt);
+}
+function jrTick(){
+  if(!JT) return;
+  if(JT.pauseStartedAt) return;              // frozen — elapsed math already ignores paused time
+  const elapsedSec = jrElapsedMs()/1000;
+  if(elapsedSec >= JR_TOTAL_SEC){ jrFinish(true); return; }
+  const ph = jrPhaseAt(elapsedSec);
+  if(!ph.free && ph.iv.kind==="rest"){
+    const secLeft = Math.ceil(ph.left);
+    if(secLeft<=3 && secLeft>0 && secLeft!==JT.lastBeepSec){ JT.lastBeepSec=secLeft; CUE.tick(secLeft%2===1); }
+  } else {
+    JT.lastBeepSec = -1;
+  }
+  jrPaint(elapsedSec, ph);
+}
+function jrStart(){
+  audio();   // unlock AudioContext on this tap — iOS Safari blocks it until a user gesture
+  JT = {startedAt:Date.now(), pausedMs:0, pauseStartedAt:null, skipMs:0, lastBeepSec:-1};
+  document.body.classList.add("timing");
+  $("jrover").classList.add("up");
+  wakeOn();
+  if(!jrInterval) jrInterval = setInterval(jrTick, 200);
+  jrPaint(0, jrPhaseAt(0));
+  CUE.go();
+}
+function jrPause(){
+  if(!JT) return;
+  if(JT.pauseStartedAt){
+    JT.pausedMs += Date.now()-JT.pauseStartedAt;
+    JT.pauseStartedAt = null;
+  } else {
+    JT.pauseStartedAt = Date.now();
+  }
+  jrPaint();
+}
+function jrSkip(){
+  if(!JT) return;
+  const elapsedSec = jrElapsedMs()/1000;
+  if(elapsedSec >= JR_FIXED_SEC) return;   // nothing left to skip to during free jump
+  const ph = jrPhaseAt(elapsedSec);
+  JT.skipMs += Math.max(0, ph.left)*1000;
+  CUE.rest();
+  jrPaint();
+}
+function jrFinish(fullyFinished){
+  if(!JT) return;
+  clearInterval(jrInterval); jrInterval = null;
+  const elapsedSec = Math.min(JR_TOTAL_SEC, jrElapsedMs()/1000);
+  const setsCompleted = jrSetsCompletedAt(elapsedSec);
+  wakeOff();
+  document.body.classList.remove("timing");
+  $("jrover").classList.remove("up");
+  JT_RESULT = {durationSec: Math.round(elapsedSec), setsCompleted, finished: !!fullyFinished};
+  JT = null;
+  CUE.done();
+  render();
+  toast(fullyFinished ? "Workout complete — log it" : "Ended early — log it");
+}
+function wireJrTimer(){
+  $("jr-pause").onclick = jrPause;
+  $("jr-skip").onclick  = jrSkip;
+  $("jr-stop").onclick  = ()=>{ if(JT) jrFinish(false); };
+}
+function jrSaveLog(){
+  const r = JT_RESULT; if(!r) return;
+  S.log = S.log || [];
+  S.log.push({date:todayYmd(), program:JR_ID, status:"done",
+    durationSec:r.durationSec, durationMinutes:Math.round(r.durationSec/60),
+    setsCompleted:r.setsCompleted, finished:r.finished,
+    rpe:num("jr_rpe"), notes:($("jr_notes")&&$("jr_notes").value.trim())||""});
+  S.log.sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : 0);
+  JT_RESULT = null;
+  save(); render(); toast("Logged");
+}
+function wireJumpRope(){
+  const bs = $("jr-start");        if(bs) bs.onclick = jrStart;
+  const sv = $("jr-save-log");     if(sv) sv.onclick = jrSaveLog;
+  const dc = $("jr-discard-log");  if(dc) dc.onclick = ()=>{ JT_RESULT=null; render(); };
 }
 
 function renderRail(){
@@ -2774,6 +3063,7 @@ function render(){
   if(actEdit) wireActEditor(); else if(tab==="logs") wireLogs();
   if(tab==="settings") wireBackup();
   if(tab==="programs") wireProgSwitch();
+  if(tab==="programs" && selectedProgramSlot===1) wireJumpRope();
   wire();
 }
 
@@ -2936,6 +3226,7 @@ function wireProgSwitch(){
   refreshMaxes();       // maxes are a cache over S.tests, never trusted from storage
   if(wasOld) save();                     // persist the migration once
   wireTimer();
+  wireJrTimer();
   render();
 })();
 

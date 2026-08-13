@@ -439,6 +439,13 @@
   .tover.brk .tphase{color:var(--red);}
   .tover.brk .tnum{color:var(--red);}
   .tover.brk .tprog i{background:var(--red);}
+  /* the interval name (e.g. "Regular jump") is the actual instruction here, not a
+     secondary label like the other timer's "Hold"/"Rest" — needs to read from
+     across the room, so it gets its own size close to the countdown number's. */
+  #jr-tphase{
+    font-family:var(--sans); font-weight:700; letter-spacing:-.01em; text-transform:none;
+    font-size:clamp(30px,9vw,54px); line-height:1.08; margin:var(--s5) 0 var(--s2);
+  }
   @keyframes tpulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.07);opacity:.7;}}
   .tover.closing .tnum{color:var(--alarm);animation:tpulse .5s ease-in-out infinite;}
   .tover.closing .tphase{color:var(--alarm);}
@@ -863,11 +870,12 @@ const JR_INTERVALS = [                                       // one set, in orde
   {name:"Break",                  kind:"rest", sec:10},
   {name:"Regular jump",           kind:"work", sec:60},
   {name:"Break",                  kind:"rest", sec:10},
-  {name:"Left foot / right foot", kind:"work", sec:60}
+  {name:"Left foot / right foot", kind:"work", sec:60},
+  {name:"Break",                  kind:"rest", sec:10}          // closes the set — this is what makes back-to-back sets have a gap
 ];
-const JR_SET_SEC   = JR_INTERVALS.reduce((a,b)=>a+b.sec,0);   // 410 = 6:50
-const JR_FIXED_SEC = JR_SET_SEC * JR_SETS;                    // 1640 = 27:20
-const JR_FREE_SEC  = JR_TOTAL_SEC - JR_FIXED_SEC;              // 160 = 2:40, informational
+const JR_SET_SEC   = JR_INTERVALS.reduce((a,b)=>a+b.sec,0);   // 420 = 7:00
+const JR_FIXED_SEC = JR_SET_SEC * JR_SETS;                    // 1680 = 28:00
+const JR_FREE_SEC  = JR_TOTAL_SEC - JR_FIXED_SEC;              // 120 = 2:00, informational
 // All 4 sets flattened into one ordered timeline with cumulative start/end
 // offsets, so "what's playing right now" is a single lookup from elapsed
 // seconds — see jrPhaseAt(). That's what keeps the countdown drift-free.
@@ -2222,7 +2230,9 @@ function jrTick(){
   const elapsedSec = jrElapsedMs()/1000;
   if(elapsedSec >= JR_TOTAL_SEC){ jrFinish(true); return; }
   const ph = jrPhaseAt(elapsedSec);
-  if(!ph.free && ph.iv.kind==="rest"){
+  if(!ph.free){
+    // 3/2/1s-remaining beep on every timed interval, work or break — same
+    // oscillator click used by the finger-block timer's rest countdown.
     const secLeft = Math.ceil(ph.left);
     if(secLeft<=3 && secLeft>0 && secLeft!==JT.lastBeepSec){ JT.lastBeepSec=secLeft; CUE.tick(secLeft%2===1); }
   } else {

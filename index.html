@@ -741,7 +741,7 @@ const SESSIONS = [
 
   W("Small edge — 10mm calibration",
     "No 10mm baseline yet. Ramp to a 7s max, then 3 working sets at what you found. Expect roughly 50–65% of your 20mm number. Skin is the limiter on this edge, not strength — if your tips are thin or a joint feels tender, run this on 20mm at 90% and skip 10mm entirely. You lose almost nothing.",
-    [blk({edge:"10mm", sets:3, hold:8, label:"Ramp, then work"})], "test10"),
+    [blk({edge:"10mm", sets:3, hold:7, label:"Ramp, then work"})], "test10"),
 
   W("Heavy — 20mm",
     "Same shape, slightly heavier. Around 2–3s of margin.",
@@ -1045,9 +1045,9 @@ const TEST_PROTOCOLS = {
    one-hand half-crimp max (session 4 and the retest); hangTotal is a 10s
    two-arm half-crimp max (every hng() block uses hold:10).
 
-   block10 is recorded as "7s half crimp" on every stored test, and its own cue
-   says "ramp to a 7s max", though its block reads hold:8 — the 7s figure is
-   what the data actually contains, so that is what is matched here. */
+   block10 is a 7s max too: its cue says "ramp to a 7s max" and every stored
+   test records "7s half crimp". Its block briefly read hold:8, a typo since
+   corrected in SESSIONS, so definition, cue and stored data now agree. */
 const REF_REQUIRES = {
   block20:   {label:"20mm block max",   grip:"half", param:"edge", value:20, hands:"one", protocol:"max_weight", holdSec:7},
   block10:   {label:"10mm block max",   grip:"half", param:"edge", value:10, hands:"one", protocol:"max_weight", holdSec:7},

@@ -25,6 +25,7 @@ The app is structured around four tabs:
 - **No build step, no framework, no bundler.** Don't introduce React, npm packages, or a build process. Keep it plain HTML/CSS/JS that runs by opening the file or serving it statically.
 - **Every time `index.html` changes, bump the cache name in `sw.js`** (e.g. `fingerblock-v5` → `fingerblock-v6`). Without this, the service worker keeps serving the old cached version and changes won't appear to the user. `deploy.sh` may already automate this — check before doing it manually.
 - **User data lives in `localStorage`**, key `fingerblock:v1`. Never move this to a server or external DB without an explicit request — it's a deliberate local-first design choice.
+- **Never break existing stored data.** I have live training logs in localStorage under `fingerblock:v1`. Don't change the storage key, don't change the shape of existing stored objects, and don't write defaults on load before checking for existing data. If a change would require a data migration, stop and tell me before doing it.
 - **Program definitions live in `SESSIONS`** (near the top of the script), with phase structure in `PHASES` just below it. That's the one place to touch to change a training program's content.
 - Don't add analytics, tracking, or any third-party network calls without asking first.
 

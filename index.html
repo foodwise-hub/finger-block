@@ -146,7 +146,7 @@
     pointer-events:none;
   }
   .tabbar-in{
-    pointer-events:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1);
+    pointer-events:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:var(--s1);
     width:100%;max-width:440px;padding:var(--s1);
     background:rgba(20,28,36,.82);
     -webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);
@@ -337,6 +337,7 @@
   .chart svg{width:100%;height:auto;display:block;}
   .chart .ct{font-family:var(--mono);font-size:7.5px;fill:var(--dim);}
   .chart-key{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s4);padding:var(--s2) var(--s2) 0;font-family:var(--mono);font-size:9.5px;color:var(--dim);}
+  .chart-note{font-size:11px;line-height:1.5;color:var(--dim);margin-top:var(--s2);font-style:italic;font-family:var(--serif);}
   .chart-key span{display:flex;align-items:center;gap:5px;}
   .chart-key i{width:10px;height:3px;border-radius:2px;display:block;}
   .chart-empty{
@@ -595,6 +596,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
       <span>Logs</span>
     </button>
+    <button role="tab" id="tab-test" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 14h9"/></svg>
+      <span>Test</span>
+    </button>
     <button role="tab" id="tab-data" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>
       <span>Data</span>
@@ -652,6 +657,13 @@
     <button id="jr-skip">Skip</button>
     <button id="jr-stop" class="stop">End</button>
   </div>
+</div>
+
+<div class="tover" id="htover" aria-live="polite">
+  <div class="ttop"><div class="tsession" id="ht-grip"></div></div>
+  <div class="tphase" id="ht-mode">Hold</div>
+  <div class="tnum" id="ht-num">0</div>
+  <div class="tctrl"><button id="ht-stop" class="stop">Stop</button></div>
 </div>
 
 
@@ -917,7 +929,20 @@ const TOOLS = [
   {id:"block10", label:"Block 10mm", hands:["L","R"], protocol:"7s half crimp"},
   {id:"hang",    label:"Two-arm hang 20mm", hands:["both"], protocol:"10s half crimp"}
 ];
-function toolOf(id){ return TOOLS.find(t=>t.id===id) || {id, label:id, hands:["L","R"], protocol:""}; }
+function toolOf(id){
+  const known = TOOLS.find(t=>t.id===id);
+  if(known) return known;
+  // Tests from the Test tab that match no program reference carry a synthetic
+  // id. Render it as words rather than leaking the raw key into the history.
+  if(typeof id === "string" && id.indexOf("t:") === 0){
+    const p = id.split(":");            // t : grip : param : value : hands : protocol : hold
+    const g = TEST_GRIPS.find(x=>x.id===p[1]);
+    const f = TEST_FIELDS[p[2]];
+    if(g && f) return {id, hands:["L","R"], protocol:"",
+      label: g.label+" "+p[3]+f.unit+(p[4]==="two" ? " · two hands" : "")};
+  }
+  return {id, label:id, hands:["L","R"], protocol:""};
+}
 function addTest(o){
   S.tests = S.tests || [];
   S.tests.push(Object.assign({
@@ -928,7 +953,9 @@ function addTest(o){
   refreshMaxes();
 }
 function testsFor(tool, hand){
-  return (S.tests||[]).filter(t=>t.tool===tool && t.hand===hand)
+  // applied===false means a Test-tab result that has not been deliberately
+  // applied yet. Older records have no such field, so they always count.
+  return (S.tests||[]).filter(t=>t.tool===tool && t.hand===hand && t.applied!==false)
     .sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : 0);
 }
 // S.maxes is a cache over S.tests — latest is current, first is baseline
@@ -941,6 +968,609 @@ function refreshMaxes(){
   S.baseline = {block20L:first("block20","L"), block20R:first("block20","R"),
                 block10L:first("block10","L"), block10R:first("block10","R"),
                 hangTotal:first("hang","both")};
+}
+
+/* ============================== the Test section ==============================
+   Data-driven by design: the renderer below knows only the `kind`s in
+   TEST_FIELDS. It has never heard of a sloper or a mono. Adding a grip category
+   later is one line in TEST_GRIPS — no new UI code.
+
+   Storage note: results still go into S.tests via addTest(), keeping every
+   field the old records already carry (tool / hand / load / bw / protocol /
+   added / note / date / program). The richer fields below are ADDITIVE and
+   optional, so nothing already stored changes shape. See DATA-MODEL.md,
+   "Test result".
+   ============================================================================ */
+
+// One definition per field. `kind` is all the form renderer understands.
+const TEST_FIELDS = {
+  // --- the variable parameter, one per grip family ---
+  edge:      {label:"Edge depth",   unit:"mm", kind:"choice", allowCustom:true,
+              options:[6,8,10,12,14,15,18,20,22,25,30,35]},
+  pinchWide: {label:"Pinch width",  unit:"mm", kind:"number", min:10, max:150, step:1},
+  slopeAng:  {label:"Sloper angle", unit:"°",  kind:"number", min:0,  max:90,  step:5},
+
+  // --- universal parameters ---
+  hands:     {label:"Hands", kind:"choice", def:"one",
+              options:[{v:"one", l:"One hand"}, {v:"two", l:"Two hands"}]},
+  whichHand: {label:"Which hand", kind:"choice", def:"L", showIf:{hands:"one"},
+              options:[{v:"L", l:"Left"}, {v:"R", l:"Right"}]},
+  protocol:  {label:"Protocol", kind:"choice", def:"max_weight",
+              options:[{v:"max_weight",   l:"Max weight for a set duration"},
+                       {v:"max_duration", l:"Max duration at a set weight"}]},
+  holdSec:   {label:"Hold duration", unit:"s", kind:"number", min:1, max:120, step:1, def:7},
+  added:     {label:"Added weight",  kind:"number", step:"any", weight:true, def:0},
+  bw:        {label:"Bodyweight",    kind:"number", step:"any", weight:true},
+  date:      {label:"Date",  kind:"date"},
+  notes:     {label:"Notes", kind:"text"}
+};
+
+// Applies to every grip. Listed per-category so a category could opt out later.
+const TEST_COMMON = ["hands","whichHand","protocol","holdSec","added","bw","date","notes"];
+
+/* Grip categories. `param` is the one field that varies by family; `warn` is
+   plain data, so an injury note needs no special-casing anywhere. */
+const TEST_GRIPS = [
+  {id:"half",   label:"Half crimp",           param:"edge"},
+  {id:"full",   label:"Full crimp",           param:"edge"},
+  {id:"open4",  label:"Open hand (4-finger)", param:"edge"},
+  {id:"drag3",  label:"Three-finger drag",    param:"edge"},
+  {id:"front2", label:"Front two",            param:"edge"},
+  {id:"back2",  label:"Back two",             param:"edge"},
+  {id:"mid2",   label:"Middle two",           param:"edge"},
+  {id:"mono",   label:"Mono",                 param:"edge",
+   warn:"One finger takes the entire load. Mono pulls carry the highest pulley "
+      + "injury risk of any grip here — ramp up slowly, stop at any sharp or "
+      + "point pain, and never test a mono on skin or joints that already feel off."},
+  {id:"pinch",  label:"Pinch",                param:"pinchWide"},
+  {id:"sloper", label:"Sloper",               param:"slopeAng"}
+];
+function gripOf(id){ return TEST_GRIPS.find(g=>g.id===id) || TEST_GRIPS[0]; }
+function fieldsForGrip(g){ return [g.param].concat(TEST_COMMON); }
+
+/* The two protocols swap which field you type in and which one is the result.
+   `given` is set before you pull; `result` is what the test produces. */
+const TEST_PROTOCOLS = {
+  max_weight:   {label:"Max weight for a set duration",
+                 given:"holdSec", result:"added",
+                 resultLabel:"Max added weight held", resultHint:"the number this test produces"},
+  max_duration: {label:"Max duration at a set weight",
+                 given:"added",   result:"holdSec",
+                 resultLabel:"Longest hold reached",  resultHint:"the number this test produces"}
+};
+
+/* What each existing program reference requires of a test before it may be
+   applied. This DESCRIBES refs already used in SESSIONS — it does not change
+   any stored prescription. Verified against the program: block20 is a 7s
+   one-hand half-crimp max (session 4 and the retest); hangTotal is a 10s
+   two-arm half-crimp max (every hng() block uses hold:10).
+
+   block10 is recorded as "7s half crimp" on every stored test, and its own cue
+   says "ramp to a 7s max", though its block reads hold:8 — the 7s figure is
+   what the data actually contains, so that is what is matched here. */
+const REF_REQUIRES = {
+  block20:   {label:"20mm block max",   grip:"half", param:"edge", value:20, hands:"one", protocol:"max_weight", holdSec:7},
+  block10:   {label:"10mm block max",   grip:"half", param:"edge", value:10, hands:"one", protocol:"max_weight", holdSec:7},
+  hangTotal: {label:"Two-arm hang max", grip:"half", param:"edge", value:20, hands:"two", protocol:"max_weight", holdSec:10}
+};
+
+/* ==================== Test section: matching and applying ====================
+   A test may only drive a program prescription when every dimension agrees —
+   grip, edge/width, hands, protocol and hold. Anything less and the apply
+   button stays disabled with the specific reason, because a 15mm number
+   quietly standing in for a 20mm one corrupts every load derived from it.
+   ========================================================================== */
+const REF_TOOL = {block20:"block20", block10:"block10", hangTotal:"hang"};
+
+// Why this test does not fit this ref — [] means it fits.
+function refMismatches(t, ref){
+  const r = REF_REQUIRES[ref]; if(!r) return ["Unknown reference."];
+  const out = [];
+  if(t.grip !== r.grip)
+    out.push("needs "+gripOf(r.grip).label.toLowerCase()+", this test was "+gripOf(t.grip).label.toLowerCase());
+  if(t.param !== r.param || Number(t.paramValue) !== Number(r.value))
+    out.push("needs "+r.value+(TEST_FIELDS[r.param].unit||"")+", this test was "
+             +t.paramValue+(TEST_FIELDS[t.param].unit||""));
+  if(t.hands !== r.hands)
+    out.push("needs "+(r.hands==="two"?"two hands":"one hand")+", this test was "
+             +(t.hands==="two"?"two hands":"one hand"));
+  if(t.protocolType !== r.protocol)
+    out.push("needs "+TEST_PROTOCOLS[r.protocol].label.toLowerCase());
+  if(Number(t.holdSec) !== Number(r.holdSec))
+    out.push("needs a "+r.holdSec+"s hold, this test was "+t.holdSec+"s");
+  return out;
+}
+function refFor(t){
+  for(const ref in REF_REQUIRES){ if(!refMismatches(t, ref).length) return ref; }
+  return null;
+}
+// tool id: reuse the legacy id when the test matches one, so the existing
+// program keeps working; otherwise a stable synthetic id that drives nothing.
+function toolIdFor(t){
+  const ref = refFor(t);
+  if(ref) return REF_TOOL[ref];
+  return "t:"+[t.grip,t.param,t.paramValue,t.hands,t.protocolType,t.holdSec].join(":");
+}
+
+// Run fn() with a substituted maxes cache, then always put the real one back.
+// Used so previews are computed by the same blockLoads() the program uses,
+// rather than a second copy of the maths that could drift out of step.
+function withMaxes(m, fn){
+  const keep = S.maxes;
+  S.maxes = m;
+  try{ return fn(); } finally{ S.maxes = keep; }
+}
+// what S.maxes would become if this test were applied
+function projectedMaxes(t){
+  const m = Object.assign({}, S.maxes);
+  const ref = refFor(t); if(!ref) return m;
+  if(ref === "hangTotal") m.hangTotal = t.load;
+  else m[ref + (t.hands==="two" ? "" : t.whichHand)] = t.load;
+  return m;
+}
+// every future prescription that reads this ref — future only, never the past
+function futureUses(ref){
+  const done = doneCount();
+  const out = [];
+  for(let i=done; i<SESSIONS.length; i++){
+    (SESSIONS[i].blocks||[]).forEach((b,bi)=>{
+      if(b.load && b.load.ref===ref) out.push({idx:i, bi, b, name:SESSIONS[i].name});
+    });
+  }
+  return out;
+}
+function applyPreview(t){
+  const ref = refFor(t); if(!ref) return null;
+  const before = Object.assign({}, S.maxes), after = projectedMaxes(t);
+  return futureUses(ref).map(u=>({
+    idx:u.idx, name:u.name, label:u.b.label, pct:u.b.load.pct,
+    before: withMaxes(before, ()=>blockLoads(u.b, 1)),
+    after:  withMaxes(after,  ()=>blockLoads(u.b, 1))
+  }));
+}
+
+/* ==================== Test section: rendering ====================
+   Built from the components already in this file — .card / .card-head /
+   .fields / .fld / .duo / .seg / .btn / .banner / .locked-note / .specs /
+   .past-log / accSec — so it inherits the app's look without new styling.
+   ================================================================ */
+let testDraft = null;    // the test being set up; null until a grip is picked
+let testPreview = null;  // the pending apply preview, awaiting confirmation
+
+function newDraft(gripId){
+  const g = gripOf(gripId);
+  const d = {grip:g.id, param:g.param, paramValue:null, customParam:false};
+  fieldsForGrip(g).forEach(f=>{
+    const def = TEST_FIELDS[f];
+    if(def && def.def !== undefined) d[f] = def.def;
+  });
+  d.date = todayYmd();
+  if(d.bw == null && S.bodyweight != null) d.bw = S.bodyweight;
+  const pdef = TEST_FIELDS[g.param];
+  if(pdef.kind === "choice" && pdef.options.length) d.paramValue = pdef.options.indexOf(20)>=0 ? 20 : pdef.options[0];
+  if(pdef.kind === "number") d.paramValue = g.param==="slopeAng" ? 30 : 40;
+  return d;
+}
+
+// one field -> markup, driven entirely by its `kind`
+function testFieldHtml(key, d){
+  const f = TEST_FIELDS[key]; if(!f) return "";
+  if(f.showIf){
+    for(const k in f.showIf){ if(d[k] !== f.showIf[k]) return ""; }
+  }
+  const id = "tf_"+key;
+  const val = d[key];
+  const lbl = f.label + (f.weight ? " ("+unit()+")" : f.unit ? " ("+f.unit+")" : "");
+
+  if(f.kind === "choice"){
+    const opts = f.options.map(o=> (typeof o === "object") ? o : {v:o, l:o+(f.unit||"")});
+    return '<div class="fld"><label>'+lbl+'</label><select id="'+id+'" data-tf="'+key+'">'
+      + opts.map(o=>'<option value="'+esc(o.v)+'"'+(String(val)===String(o.v)?' selected':'')+'>'+esc(o.l)+'</option>').join("")
+      + (f.allowCustom ? '<option value="__custom">Custom…</option>' : '')
+      + '</select></div>';
+  }
+  if(f.kind === "number"){
+    return '<div class="fld"><label>'+lbl+'</label><input type="number" id="'+id+'" data-tf="'+key+'"'
+      + (f.min!=null?' min="'+f.min+'"':'') + (f.max!=null?' max="'+f.max+'"':'')
+      + ' step="'+(f.step||1)+'" value="'+(val==null?"":val)+'"></div>';
+  }
+  if(f.kind === "date")
+    return '<div class="fld"><label>'+lbl+'</label><input type="date" id="'+id+'" data-tf="'+key+'" value="'+(val||todayYmd())+'"></div>';
+  return '<div class="fld"><label>'+lbl+'</label><textarea id="'+id+'" data-tf="'+key+'">'+esc(val||"")+'</textarea></div>';
+}
+
+// the variable parameter, plus its custom-entry escape hatch
+function paramFieldHtml(d){
+  const f = TEST_FIELDS[d.param];
+  const lbl = f.label + (f.unit ? " ("+f.unit+")" : "");
+  if(f.kind === "choice" && !d.customParam){
+    return '<div class="fld"><label>'+lbl+'</label><select id="tf_param" data-tf="paramValue">'
+      + f.options.map(o=>'<option value="'+o+'"'+(Number(d.paramValue)===o?' selected':'')+'>'+o+f.unit+'</option>').join("")
+      + '<option value="__custom">Custom…</option></select></div>';
+  }
+  return '<div class="fld"><label>'+lbl+(f.kind==="choice"?" — custom":"")+'</label>'
+    + '<input type="number" id="tf_param" data-tf="paramValue"'
+    + (f.min!=null?' min="'+f.min+'"':'') + (f.max!=null?' max="'+f.max+'"':'')
+    + ' step="'+(f.step||1)+'" value="'+(d.paramValue==null?"":d.paramValue)+'">'
+    + (f.kind==="choice" ? '<button class="btn ghost sm" id="tf_param_back" style="margin-top:var(--s2)">Back to the list</button>' : '')
+    + '</div>';
+}
+
+/* ---- the Test tab ---- */
+function renderTest(){
+  // a pending apply takes over the screen until it is confirmed or cancelled
+  if(testPreview) return renderTestPreview();
+
+  // just saved: show what was recorded, and what it can drive
+  const justSaved = !testDraft ? lastSavedTest() : null;
+  if(justSaved) return renderSavedTest(justSaved);
+
+  // step 1 — pick a grip
+  if(!testDraft){
+    let h = '<div class="banner"><span class="eyebrow">Test</span>'
+      + 'A benchmark you can repeat. Pick the grip, set it up the same way every time, '
+      + 'and the number stays comparable months later.</div>';
+    h += '<div class="up"><h3>Pick a grip</h3><div class="card"><div class="fields">';
+    TEST_GRIPS.forEach(g=>{
+      const f = TEST_FIELDS[g.param];
+      h += '<div class="actrow"><div><div class="actrow-t">'+esc(g.label)+'</div>'
+        +  '<div class="actrow-d">'+esc(f.label.toLowerCase())+' in '+esc(f.unit)+'</div></div>'
+        +  '<button class="btn sm" data-grip="'+g.id+'">Set up</button></div>';
+    });
+    h += '</div></div></div>';
+    h += accSec("test:history", "Past results", (S.tests||[]).length+" recorded", dataTests);
+    return h;
+  }
+
+  // step 2 — parameters
+  const d = testDraft, g = gripOf(d.grip);
+  const proto = TEST_PROTOCOLS[d.protocol] || TEST_PROTOCOLS.max_weight;
+  let h = '<div class="card"><div class="card-head">'
+    + '<div class="row1"><h2>'+esc(g.label)+'</h2>'
+    + '<span class="grade">'+(d.paramValue==null?"—":d.paramValue)+'</span></div>'
+    + '<div class="eyebrow">'+esc(TEST_FIELDS[d.param].label)+' · '+esc(proto.label)+'</div>'
+    + '</div>';
+
+  if(g.warn) h += '<div class="locked-note" style="margin:var(--s5) var(--s5) 0"><b>Injury risk.</b> '+esc(g.warn)+'</div>';
+
+  h += '<div class="fields">';
+  h += paramFieldHtml(d);
+  // hands / protocol first, since they decide what the rest of the form means
+  ["hands","whichHand","protocol"].forEach(k=>{ h += testFieldHtml(k, d); });
+
+  // the protocol decides which of hold/weight you set and which one you record
+  const givenKey = proto.given, resultKey = proto.result;
+  h += '<div class="duo">' + testFieldHtml(givenKey, d) + '</div>';
+  h += '<div class="fld"><label>'+esc(proto.resultLabel)
+    +  (TEST_FIELDS[resultKey].weight ? " ("+unit()+")" : TEST_FIELDS[resultKey].unit ? " ("+TEST_FIELDS[resultKey].unit+")" : "")
+    +  '</label><input type="number" step="any" id="tf_result" data-tf="'+resultKey+'" value="'
+    +  (d[resultKey]==null?"":d[resultKey])+'" placeholder="'+esc(proto.resultHint)+'"></div>';
+
+  ["bw","date","notes"].forEach(k=>{ h += testFieldHtml(k, d); });
+  h += '</div>';
+
+  h += '<div class="actions">'
+    + '<button class="btn primary" id="test-save">Save result</button>'
+    + '<button class="btn skip" id="test-run">Run timer</button>'
+    + '</div>'
+    + '<div class="actions" style="border-top:0;padding-top:0">'
+    + '<button class="btn ghost sm" id="test-back">Pick a different grip</button></div>'
+    + '</div>';
+
+  // what this test will and will not drive, worked out live from the draft
+  h += renderApplyBox(draftAsTest(d), true);
+  return h;
+}
+
+// the draft, shaped exactly as it will be stored — so the apply box previews
+// the real thing rather than an approximation of it
+function draftAsTest(d){
+  const added = Number(d.added) || 0;
+  const bw = d.bw != null ? Number(d.bw) : null;
+  const two = d.hands === "two";
+  return {
+    grip:d.grip, param:d.param, paramValue:Number(d.paramValue),
+    hands:d.hands, whichHand: two ? null : (d.whichHand||"L"),
+    protocolType:d.protocol, holdSec:Number(d.holdSec),
+    added, bw, notes:d.notes||"", date:d.date||todayYmd(),
+    // load follows the existing convention: two-arm totals include bodyweight,
+    // one-hand is the weight actually lifted
+    load: two ? ((bw||0) + added) : added
+  };
+}
+
+
+/* ---- what was just recorded, and what it may drive ---- */
+function renderSavedTest(t){
+  const g = gripOf(t.grip || "half");
+  const proto = TEST_PROTOCOLS[t.protocolType] || TEST_PROTOCOLS.max_weight;
+  const pf = TEST_FIELDS[t.param || "edge"];
+  const sw = (t.bw && t.load) ? (t.load/t.bw).toFixed(2)+"x bodyweight" : null;
+
+  let h = '<div class="card"><div class="card-head">'
+    + '<div class="row1"><h2>'+esc(g.label)+'</h2>'
+    + '<span class="grade">'+esc(String(t.paramValue!=null?t.paramValue:"—"))+'</span></div>'
+    + '<div class="eyebrow">'+pretty(t.date)+' · '+esc(proto.label)+'</div>'
+    + '<div class="specs">'
+    +   '<div><div class="k">'+esc(pf.label)+'</div><div class="v">'+esc(String(t.paramValue))+' <small>'+esc(pf.unit)+'</small></div></div>'
+    +   '<div><div class="k">Hands</div><div class="v">'+(t.hands==="two"?"Two":(t.whichHand==="R"?"Right":"Left"))+'</div></div>'
+    +   '<div><div class="k">Hold</div><div class="v">'+esc(String(t.holdSec))+' <small>s</small></div></div>'
+    +   '<div><div class="k">Added</div><div class="v">'+fmt(t.added)+' <small>'+unit()+'</small></div></div>'
+    +   '<div><div class="k">Total load</div><div class="v">'+fmt(t.load)+' <small>'+unit()+'</small></div></div>'
+    +   '<div><div class="k">Bodyweight</div><div class="v">'+(t.bw!=null?fmt(t.bw):"—")+' <small>'+unit()+'</small></div></div>'
+    + '</div>'
+    + (sw ? '<div class="cue">'+sw+'.</div>' : '')
+    + (t.note ? '<div class="cue">'+esc(t.note)+'</div>' : '')
+    + '</div>'
+    + '<div class="actions"><button class="btn" id="test-new">Run another test</button>'
+    + '<button class="btn skip" id="test-done">Done</button></div></div>';
+
+  h += renderApplyBox(t, false);
+  if(t.applied) h += '<div class="banner"><span class="eyebrow">Applied</span>'
+    + 'This result is feeding your upcoming prescriptions. Sessions already logged are unchanged.</div>';
+  h += accSec("test:history", "Past results", (S.tests||[]).length+" recorded", dataTests);
+  return h;
+}
+function renderApplyBox(t, isDraft){
+  const ref = refFor(t);
+  let h = '<div class="up"><h3>Apply to the program</h3>';
+  const rows = Object.keys(REF_REQUIRES).map(k=>{
+    const miss = refMismatches(t, k);
+    const uses = futureUses(k).length;
+    return {k, r:REF_REQUIRES[k], miss, uses};
+  });
+  h += '<div class="card"><div class="fields">';
+  rows.forEach(row=>{
+    const ok = !row.miss.length;
+    const why = ok
+      ? (row.uses ? row.uses+" future session"+(row.uses===1?"":"s")+" use this"
+                  : "nothing upcoming uses this yet")
+      : row.miss[0].charAt(0).toUpperCase()+row.miss[0].slice(1)+".";
+    h += '<div class="actrow"><div><div class="actrow-t">'+esc(row.r.label)+'</div>'
+      +  '<div class="actrow-d">'+esc(why)+'</div></div>'
+      +  '<button class="btn sm" data-applyref="'+row.k+'"'
+      +  ((ok && row.uses && !isDraft) ? '' : ' disabled')+'>Apply</button></div>';
+  });
+  h += '</div></div>';
+  if(isDraft) h += '<div class="cue" style="border:0">Save the result first — applying is a separate, '
+    + 'confirmed step, so a test never moves your loads by surprise.</div>';
+  h += '</div>';
+  return h;
+}
+
+/* ---- the confirmation preview ---- */
+function renderTestPreview(){
+  const p = testPreview; if(!p) return "";
+  const t = p.test, changes = p.changes;
+  const r = REF_REQUIRES[p.ref];
+
+  // which stored max this actually moves, and from what to what
+  const key = p.ref === "hangTotal" ? "hangTotal" : p.ref + (t.hands==="two" ? "" : t.whichHand);
+  const beforeMax = S.maxes[key], afterMax = projectedMaxes(t)[key];
+  const sideLbl = t.hands === "two" ? "Two-arm" : (t.whichHand === "R" ? "Right-hand" : "Left-hand");
+
+  // A one-hand test only fills its own side. Until the other side has a test
+  // too, the program still cannot state a load — say so rather than showing an
+  // arrow between two identical placeholders.
+  const unresolved = changes.length && changes.every(c=>c.after && c.after.rpe);
+  const otherKey = (p.ref !== "hangTotal" && t.hands !== "two")
+    ? p.ref + (t.whichHand === "L" ? "R" : "L") : null;
+  const otherMissing = otherKey && S.maxes[otherKey] == null;
+
+  let h = '<div class="card"><div class="card-head">'
+    + '<div class="row1"><h2>Apply this test?</h2></div>'
+    + '<div class="eyebrow">'+esc(r.label)+' · '+changes.length+' future session'
+    + (changes.length===1?"":"s")+' affected</div>'
+    + '<div class="specs">'
+    +   '<div><div class="k">'+esc(sideLbl)+' max</div><div class="v">'
+    +     (beforeMax==null ? "—" : fmt(beforeMax))+' → '+fmt(afterMax)+' <small>'+unit()+'</small></div></div>'
+    + '</div>'
+    + '<div class="cue">Only sessions you have not logged yet are affected. Everything '
+    + 'already in your history keeps the load it was actually done at.</div></div>';
+
+  if(otherMissing){
+    h += '<div class="fields"><div class="locked-note"><b>One side only.</b> This fills the '
+      + (t.whichHand==="L"?"left":"right")+' side. The '+(t.whichHand==="L"?"right":"left")
+      + ' still has no test on this tool, and the program needs both before it can '
+      + 'prescribe a number — so these sessions stay unset until you test that hand too.</div></div>';
+  }
+
+  h += '<div class="fields" style="gap:0">';
+  if(!changes.length){
+    h += '<div class="empty">Nothing upcoming reads this number yet.</div>';
+  }
+  changes.forEach(c=>{
+    const bL = c.before && c.before.L, aL = c.after && c.after.L;
+    const bR = c.before && c.before.R, aR = c.after && c.after.R;
+    const same = (String(bL) === String(aL) && String(bR) === String(aR));
+    const both = (String(aL) === String(aR));
+    let detail;
+    if(c.after && c.after.rpe)      detail = "still unset";
+    else if(same)                    detail = "unchanged";
+    else if(both)                    detail = String(bL)+"  →  "+String(aL)+" "+unit();
+    else detail = "L "+String(bL)+" → "+String(aL)+"  ·  R "+String(bR)+" → "+String(aR);
+    h += '<div class="logrow"><div class="logrow-d">#'+(c.idx+1)+'</div>'
+      +  '<div class="logrow-v">'+esc(c.name)+' <b>'+Math.round(c.pct*100)+'%</b>'
+      +    '<em>'+esc(detail)+'</em></div><div class="logrow-a"></div></div>';
+  });
+  h += '</div>';
+  h += '<div class="actions"><button class="btn primary" id="test-confirm">Confirm and apply</button>'
+    + '<button class="btn skip" id="test-cancel">Cancel</button></div></div>';
+  return h;
+}
+
+/* ---- Test tab: wiring ---- */
+function readTestField(el){
+  const key = el.dataset.tf;
+  let v = el.value;
+  if(key === "paramValue" && v === "__custom"){ testDraft.customParam = true; render(); return; }
+  const f = TEST_FIELDS[key === "paramValue" ? testDraft.param : key];
+  if(f && f.kind === "number" || key === "paramValue" || el.type === "number"){
+    const n = parseFloat(v);
+    testDraft[key] = isFinite(n) ? n : null;
+  } else {
+    testDraft[key] = v;
+  }
+}
+function wireTest(){
+  document.querySelectorAll("#fb [data-grip]").forEach(b=>{
+    b.onclick = ()=>{ testDraft = newDraft(b.dataset.grip); testPreview = null; render(); };
+  });
+  const back = $("test-back");
+  if(back) back.onclick = ()=>{ testDraft = null; testPreview = null; render(); };
+  const pb = $("tf_param_back");
+  if(pb) pb.onclick = ()=>{ testDraft.customParam = false; render(); };
+
+  // fields that change the shape of the form re-render; the rest just store
+  document.querySelectorAll("#fb [data-tf]").forEach(el=>{
+    const key = el.dataset.tf;
+    const reshapes = (key==="hands" || key==="protocol" || key==="paramValue");
+    el.onchange = ()=>{ readTestField(el); if(reshapes) render(); };
+    if(el.tagName === "INPUT" || el.tagName === "TEXTAREA") el.oninput = ()=>{ readTestField(el); };
+  });
+
+  const run = $("test-run");
+  if(run) run.onclick = ()=> startHoldTimer();
+
+  const sv = $("test-save");
+  if(sv) sv.onclick = ()=> saveTestResult();
+
+  document.querySelectorAll("#fb [data-applyref]").forEach(b=>{
+    b.onclick = ()=>{
+      if(b.disabled) return;
+      const t = lastSavedTest();
+      if(!t) return;
+      testPreview = {ref:b.dataset.applyref, test:t, changes:applyPreview(t)||[]};
+      render();
+    };
+  });
+  const cf = $("test-confirm");
+  if(cf) cf.onclick = ()=> confirmApply();
+  const cx = $("test-cancel");
+  if(cx) cx.onclick = ()=>{ testPreview = null; render(); };
+  const nw = $("test-new");
+  if(nw) nw.onclick = ()=>{ lastSavedId = null; testDraft = null; render(); };
+  const dn = $("test-done");
+  if(dn) dn.onclick = ()=>{ lastSavedId = null; testDraft = null; render(); };
+}
+
+let lastSavedId = null;
+function lastSavedTest(){ return (S.tests||[]).find(t=>t.id === lastSavedId) || null; }
+
+function saveTestResult(){
+  const d = testDraft; if(!d) return;
+  const t = draftAsTest(d);
+  const proto = TEST_PROTOCOLS[t.protocolType];
+  const resultVal = (proto.result === "added") ? t.added : t.holdSec;
+  if(resultVal == null || !isFinite(resultVal) || resultVal <= 0){
+    toast("Enter the "+proto.resultLabel.toLowerCase()+" first"); return;
+  }
+  if(t.paramValue == null || !isFinite(t.paramValue)){
+    toast("Set the "+TEST_FIELDS[t.param].label.toLowerCase()+" first"); return;
+  }
+  if(t.hands === "two" && t.bw == null){
+    toast("A two-hand test needs your bodyweight to be meaningful"); return;
+  }
+  const ref = refFor(t);
+  const g = gripOf(t.grip);
+  const rec = {
+    // --- fields the existing records already carry, unchanged in meaning ---
+    tool: toolIdFor(t),
+    hand: t.hands === "two" ? "both" : t.whichHand,
+    load: t.load,
+    bw: t.bw,
+    added: t.added,
+    protocol: t.holdSec+"s "+g.label.toLowerCase(),
+    note: t.notes || "",
+    date: t.date,
+    // --- additive fields, ignored by everything that predates them ---
+    grip:t.grip, param:t.param, paramValue:t.paramValue,
+    hands:t.hands, whichHand:t.whichHand, protocolType:t.protocolType, holdSec:t.holdSec
+  };
+  // A test that maps onto a program reference is held back until it is applied
+  // on purpose. Records without this field (every older one) still count.
+  if(ref) rec.applied = false;
+
+  // own the id so the saved record can be found again without guessing
+  rec.id = "t"+Date.now()+Math.random().toString(36).slice(2,6);
+  addTest(rec);
+  lastSavedId = rec.id;
+  testDraft = null; testPreview = null;
+  save(); render();
+  toast(ref ? "Saved — apply it below to move your loads" : "Test saved");
+}
+
+function confirmApply(){
+  const p = testPreview; if(!p) return;
+  const t = (S.tests||[]).find(x=>x.id === p.test.id);
+  if(!t){ testPreview = null; render(); return; }
+  t.applied = true;
+  refreshMaxes();
+  testPreview = null;
+  save(); render();
+  toast("Applied — future sessions updated");
+}
+
+/* ==================== the hold timer ====================
+   Same construction as the jump-rope clock: elapsed time is recomputed from a
+   stored start timestamp against Date.now() on every tick, never accumulated,
+   so it cannot drift or stall when the screen is backgrounded.
+
+   The protocol decides the direction. "Max weight for a set duration" counts
+   DOWN to the target hold; "max duration at a set weight" counts UP until you
+   let go, and writes the time you reached straight into the result field.
+   ======================================================= */
+let HT = null, htInterval = null;
+
+function htElapsedMs(){ return HT ? (Date.now() - HT.startedAt) : 0; }
+function startHoldTimer(){
+  const d = testDraft; if(!d) return;
+  audio();                       // unlock on this tap — iOS blocks audio until a gesture
+  const proto = TEST_PROTOCOLS[d.protocol] || TEST_PROTOCOLS.max_weight;
+  const countUp = (proto.result === "holdSec");
+  const target = Number(d.holdSec) || 7;
+  HT = {startedAt:Date.now(), countUp, target, lastBeep:-1};
+  document.body.classList.add("timing");
+  $("htover").classList.add("up");
+  $("ht-grip").textContent = gripOf(d.grip).label + " · " + d.paramValue + TEST_FIELDS[d.param].unit;
+  $("ht-mode").textContent = countUp ? "Hold as long as you can" : "Hold for " + target + "s";
+  wakeOn();
+  if(!htInterval) htInterval = setInterval(htTick, 100);
+  htTick();
+  CUE.go();
+}
+function htTick(){
+  if(!HT) return;
+  const el = htElapsedMs()/1000;
+  if(HT.countUp){
+    $("ht-num").textContent = el.toFixed(1);
+    $("htover").classList.remove("closing");
+  } else {
+    const left = Math.max(0, HT.target - el);
+    $("ht-num").textContent = left.toFixed(1);
+    const secs = Math.ceil(left);
+    $("htover").classList.toggle("closing", left <= 3);
+    if(secs<=3 && secs>0 && secs!==HT.lastBeep){ HT.lastBeep = secs; CUE.tick(secs%2===1); }
+    if(left <= 0){ stopHoldTimer(true); return; }
+  }
+}
+function stopHoldTimer(reached){
+  if(!HT) return;
+  const el = htElapsedMs()/1000;
+  const countUp = HT.countUp;
+  clearInterval(htInterval); htInterval = null;
+  HT = null;
+  document.body.classList.remove("timing");
+  $("htover").classList.remove("up","closing");
+  wakeOff();
+  CUE.done();
+  // a count-up test produces the duration, so write it back into the form
+  if(countUp && testDraft){ testDraft.holdSec = Math.round(el*10)/10; }
+  render();
+  toast(countUp ? "Held "+(Math.round(el*10)/10)+"s — recorded" : (reached ? "Hold complete" : "Stopped"));
+}
+function wireHoldTimer(){
+  const s = $("ht-stop"); if(s) s.onclick = ()=> stopHoldTimer(false);
 }
 
 /* ---- v1 -> v2 migration ---- */
@@ -1228,8 +1858,9 @@ function lineChart(series, opts){
 
   const key = series.filter(s=>s.pts.length).map(s=>
     '<span><i style="background:'+s.color+'"></i>'+s.name+'</span>').join('');
+  const note = opts.note ? '<div class="chart-note">'+esc(opts.note)+'</div>' : '';
   return '<div class="chart"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+(opts.title||'chart')+'">'
-       + g + '</svg><div class="chart-key">'+key+'</div></div>';
+       + g + '</svg><div class="chart-key">'+key+'</div>'+note+'</div>';
 }
 
 const C_OXIDE = "var(--oxide)", C_MOSS = "var(--moss)", C_INK = "var(--ink)", C_FAINT = "var(--faint)";
@@ -1274,16 +1905,30 @@ function chartRPE(){
     title:"Session RPE over time", fmt:v=>v.toFixed(1),
     empty:"Logged automatically from the RPE box. Watch for it drifting up while your loads stay flat — that's fatigue accumulating, and it's the earliest signal to back off."});
 }
+// True if any charted session predates the stored-prescribed field, so the
+// caption can say plainly which points are exact and which are estimates.
+function hasEstimatedPrescribed(){
+  return (S.log||[]).some(e=>e.program===CUR && e.status==="done" && e.loads && !e.prescribed);
+}
 // 4 — are you actually hitting the prescribed number?
 function chartAdherence(){
   const pts = [];
   (S.log||[]).filter(e=>e.program===CUR && e.status==="done" && e.loads).forEach(e=>{
     const def = SESSIONS[e.idx]; if(!def) return;
     const b = (def.blocks||[])[0]; if(!b || !b.load || b.load.rpe) return;
-    const m = S.maxes, ref = b.load.ref;
+    const ref = b.load.ref;
     if(ref === "hangTotal") return;
-    const pL = m[ref+"L"]!=null ? m[ref+"L"]*b.load.pct : null;
-    const pR = m[ref+"R"]!=null ? m[ref+"R"]*b.load.pct : null;
+    // Prefer the load this session was actually prescribed, stored when it was
+    // logged. Only entries predating that field fall back to recomputing from
+    // current maxes — those points are estimates, flagged in the caption below.
+    let pL, pR;
+    if(e.prescribed && e.prescribed.L!=null && e.prescribed.R!=null){
+      pL = e.prescribed.L; pR = e.prescribed.R;
+    } else {
+      const m = S.maxes;
+      pL = m[ref+"L"]!=null ? m[ref+"L"]*b.load.pct : null;
+      pR = m[ref+"R"]!=null ? m[ref+"R"]*b.load.pct : null;
+    }
     const act = [e.loads.L, e.loads.R].filter(v=>v!=null);
     const pre = [pL, pR].filter(v=>v!=null);
     if(!act.length || !pre.length) return;
@@ -1292,7 +1937,8 @@ function chartAdherence(){
   });
   return lineChart([{name:"Actual vs prescribed", color:C_MOSS, pts}], {
     title:"Actual load vs prescribed", fmt:v=>Math.round(v)+"%",
-    empty:"Appears once you're on percentage-based sessions and record the load you actually used. Consistently under 100% means the prescription is too heavy; consistently over means your max is stale."});
+    empty:"Appears once you're on percentage-based sessions and record the load you actually used. Consistently under 100% means the prescription is too heavy; consistently over means your max is stale.",
+    note: hasEstimatedPrescribed() ? "Sessions logged before prescribed loads were stored are estimated from your current maxes." : null});
 }
 
 /* ============================== logs ==============================
@@ -3058,7 +3704,7 @@ function wireBackup(){
 
 function render(){
   renderRail();
-  ["programs","logs","data","settings"].forEach(t=>{
+  ["programs","logs","test","data","settings"].forEach(t=>{
     const el = $("tab-"+t);
     if(el) el.setAttribute("aria-selected", String(t===tab));
   });
@@ -3067,10 +3713,12 @@ function render(){
   if(actEdit)              v.innerHTML = renderActEditor();
   else if(tab==="programs") v.innerHTML = renderPrograms();
   else if(tab==="logs")     v.innerHTML = renderLogs();
+  else if(tab==="test")     v.innerHTML = renderTest();
   else if(tab==="data")     v.innerHTML = renderHistory();
   else if(tab==="settings") v.innerHTML = renderSetup();
   wireAccordions();
   if(actEdit) wireActEditor(); else if(tab==="logs") wireLogs();
+  if(tab==="test") wireTest();
   if(tab==="settings") wireBackup();
   if(tab==="programs") wireProgSwitch();
   if(tab==="programs" && selectedProgramSlot===1) wireJumpRope();
@@ -3127,6 +3775,20 @@ function wire(){
     const def = pl.def;
     const e = {status:"done", idx:pl.idx, advances:pl.advances, name:def.name,
                rpe:num("f_rpe"), notes:($("f_notes")&&$("f_notes").value.trim())||""};
+
+    // Freeze what this session actually prescribed, at the moment it is logged.
+    // Without this the adherence chart recomputes old prescriptions from
+    // whatever your maxes are today, which rewrites your own training record.
+    // Additive field: entries logged before this existed simply lack it.
+    const pb0 = (def.blocks||[])[0];
+    if(pb0 && pb0.load && !pb0.load.rpe){
+      const pv = blockLoads(pb0, pl.mult);
+      if(pv && !pv.rpe){
+        const nL = parseFloat(pv.L), nR = parseFloat(pv.R);
+        if(isFinite(nL) && isFinite(nR))
+          e.prescribed = {L:nL, R:nR, ref:pb0.load.ref, pct:pb0.load.pct};
+      }
+    }
     const uL=num("f_useL"), uR=num("f_useR");
     if(uL!=null||uR!=null) e.loads={L:uL,R:uR};
 
@@ -3207,7 +3869,7 @@ function wire(){
   };
 }
 
-["programs","logs","data","settings"].forEach(t=>{
+["programs","logs","test","data","settings"].forEach(t=>{
   const el = $("tab-"+t);
   if(el) el.onclick = ()=>{
     tab=t; actEdit=null; editEntry=null;
@@ -3237,6 +3899,7 @@ function wireProgSwitch(){
   if(wasOld) save();                     // persist the migration once
   wireTimer();
   wireJrTimer();
+  wireHoldTimer();
   render();
 })();
 

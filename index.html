@@ -666,6 +666,22 @@
   <div class="tctrl"><button id="ht-stop" class="stop">Stop</button></div>
 </div>
 
+<div class="tover" id="fxover" aria-live="polite">
+  <div class="ttop"><div class="tsession" id="fx-tsession"></div></div>
+  <div class="tset" id="fx-tset">Set 1</div>
+  <div class="tedge" id="fx-telapsed">Elapsed 0:00</div>
+  <div class="tphase" id="fx-tphase">Ready</div>
+  <div class="tnum" id="fx-tnum">0</div>
+  <div class="tedge" id="fx-cue" style="max-width:26ch;text-transform:none;letter-spacing:.01em;font-family:var(--serif);font-style:italic;font-size:12.5px;"></div>
+  <div class="tprog"><i id="fx-tfill"></i></div>
+  <div class="tctrl">
+    <button id="fx-pause">Pause</button>
+    <button id="fx-done">Done</button>
+    <button id="fx-skip">Skip</button>
+    <button id="fx-stop" class="stop">End</button>
+  </div>
+</div>
+
 
 <script>
 (function(){
@@ -902,6 +918,136 @@ const JR_SEQ = [];
   }
 })();
 
+
+/* ---- Climbing Flexibility — 15 min ----
+   Third structural shape in the app. The finger block is a fixed, ordered
+   24-session array that ends; jump rope is one workout with no schedule and no
+   progression; this one has BOTH a weekday schedule and a progression, but no
+   end — an 8-week table that repeats.
+
+   Which session you do is decided by the weekday, not by sequence position, so
+   there is nothing to log out of order and no locked future session. See
+   DATA-MODEL.md "Program run": end_date stays null, status stays active. */
+const FLEX_PROGRAM = {id:"flex-15", name:"Climbing Flexibility", days:[2,4,0]};  // Tue, Thu, Sun
+const FLEX_ID = FLEX_PROGRAM.id;
+const FLEX_CYCLE_WEEKS = 8;
+const FLEX_SWITCH_SEC = 5;        // swapping sides or starting the next set of the same exercise
+const FLEX_TRANSITION_SEC = 15;   // moving to a different exercise — needs setup time
+const FLEX_REP_SEC = 30;          // a floor, not a limit: a rep set holds the clock until you tap Done
+
+// "variants" generalises per-side work: [null] is a single segment, SIDES is
+// left then right, and the wrist stretch uses three hand positions the same way.
+const SIDES = ["Left","Right"];
+function fex(o){ return Object.assign({kind:"time", sets:2, variants:[null]}, o); }
+
+const FLEX_SESSIONS = {
+  lower: {
+    id:"lower", label:"Lower body", days:[2,4], dayLabel:"Tue · Thu",
+    exercises:[
+      fex({name:"90/90 hip switches",  sec:45, variants:SIDES,
+           cue:"Sit tall, rotate knee to knee. Move through the range you own, not the one you want."}),
+      fex({name:"Frog stretch",        sec:60,
+           cue:"Knees wide, ankles in line with knees. Rock back only as far as the lower back stays neutral."}),
+      fex({name:"Cossack squat",       kind:"reps", reps:8, variants:SIDES,
+           cue:"Heel down on the loaded side. Slow on the way down."}),
+      fex({name:"Seated pike",         sec:45,
+           cue:"Hinge from the hip, not the spine. A soft knee is fine."}),
+      fex({name:"Single-leg RDL",      kind:"reps", reps:8, variants:SIDES,
+           cue:"Hips square, slow tempo. This is control work as much as range."}),
+      fex({name:"Knee-to-wall ankle",  sec:30, variants:SIDES,
+           cue:"Heel stays down, knee tracks over the middle toes."})
+    ]
+  },
+  upper: {
+    id:"upper", label:"Upper body", days:[0], dayLabel:"Sun",
+    exercises:[
+      fex({name:"Open-book thoracic rotation", kind:"reps", reps:8, variants:SIDES,
+           cue:"Knees stay stacked. Rotate from the ribs, follow the hand with your eyes."}),
+      fex({name:"Thoracic extension over roller", sec:45,
+           cue:"Roller under the mid back, ribs down. Support the head."}),
+      fex({name:"Shoulder CARs", kind:"reps", reps:5, variants:SIDES,
+           cue:"Slowest circle you can make. Full control beats full range."}),
+      fex({name:"Band pass-throughs", kind:"reps", reps:10,
+           cue:"Wide grip, straight elbows. Narrow the grip only when it stays easy."}),
+      fex({name:"Wrist flexor stretch", sec:30,
+           variants:["Palm down","Palm up","Fingers spread"],
+           cue:"Gentle. Fingertip and forearm tissue takes enough load from climbing already."}),
+      fex({name:"Finger tendon glides", kind:"reps", reps:10, sets:1,
+           cue:"Straight, hook, fist, tabletop. No force at all — this is circulation, not stretching."})
+    ]
+  }
+};
+
+/* Progression: a plain enumerated table, per DATA-MODEL.md, which calls this
+   `manual` and explicitly says not to build a periodization engine. The only
+   addition is a modulo, so week 9 is week 1 again and the cycle never ends. */
+const FLEX_PROGRESSION = [
+  {weeks:[1,2],   addSec:0,  thirdSetFor:[],    label:"Base"},
+  {weeks:[3,4,5], addSec:15, thirdSetFor:[],    label:"Longer holds"},
+  {weeks:[6,7,8], addSec:0,  thirdSetFor:[0,1], label:"More volume"}
+];
+function flexStageFor(week){
+  return FLEX_PROGRESSION.find(p=>p.weeks.indexOf(week)>=0) || FLEX_PROGRESSION[0];
+}
+function flexWeekOn(date){
+  const start = parseYmd(FS().startDate), d = parseYmd(date);
+  const days = Math.floor((d - start) / 86400000);
+  const w = Math.floor(Math.max(0, days) / 7);
+  return (w % FLEX_CYCLE_WEEKS) + 1;               // 1..8, then repeats
+}
+function flexSessionForDate(date){
+  const w = parseYmd(date).getDay();
+  for(const k in FLEX_SESSIONS){ if(FLEX_SESSIONS[k].days.indexOf(w)>=0) return FLEX_SESSIONS[k]; }
+  return null;
+}
+
+/* Build one session's flat timeline for a given week. Transitions sit between
+   segments so the sequence lookup stays a single pass, exactly as JR_SEQ does. */
+function flexSeq(sessionId, week){
+  const ses = FLEX_SESSIONS[sessionId];
+  const stage = flexStageFor(week);
+  const segs = [];
+  ses.exercises.forEach((e, ei)=>{
+    const sets = e.sets + (stage.thirdSetFor.indexOf(ei)>=0 ? 1 : 0);
+    const sec  = e.kind==="time" ? e.sec + stage.addSec : FLEX_REP_SEC;
+    for(let st=1; st<=sets; st++){
+      e.variants.forEach(v=>{
+        segs.push({exIdx:ei, name:e.name, variant:v, kind:e.kind,
+                   set:st, sets, sec, reps:e.reps, cue:e.cue});
+      });
+    }
+  });
+  const seq = [];
+  let t = 0;
+  segs.forEach((sg,i)=>{
+    if(i>0){
+      const sameEx = segs[i-1].exIdx === sg.exIdx;
+      const gap = sameEx ? FLEX_SWITCH_SEC : FLEX_TRANSITION_SEC;
+      seq.push({kind:"transition", name:"Next up", next:sg, sec:gap, sameEx:sameEx,
+                from:t, to:t+gap});
+      t += gap;
+    }
+    seq.push(Object.assign({}, sg, {from:t, to:t+sg.sec}));
+    t += sg.sec;
+  });
+  seq.forEach((x, i) => { x.si = i; });
+  return {seq, total:t, stage, session:ses};
+}
+function flexDurationLabel(sessionId, week){
+  const {total} = flexSeq(sessionId, week);
+  return Math.round(total/60)+" min";
+}
+
+// Per-program state. Checks for existing data before writing any default.
+function FS(){
+  S.programs = S.programs || {};
+  if(!S.programs[FLEX_ID]) S.programs[FLEX_ID] = {startDate: todayYmd(), archived:false};
+  return S.programs[FLEX_ID];
+}
+function flexLogs(){
+  return (S.log||[]).filter(e=>e.program===FLEX_ID)
+    .slice().sort((a,b)=> a.date<b.date ? 1 : a.date>b.date ? -1 : 0);
+}
 function PS(){                       // per-program state
   S.programs = S.programs || {};
   if(!S.programs[CUR]) S.programs[CUR] = {startDate:"2026-07-24", lastSkip:null, archived:false};
@@ -1647,7 +1793,8 @@ let selStation = null;
 let lastActivePts = [];   // [[x,y],...] in viewBox units, refreshed each renderRail()
 let progSwitchOpen = false;
 let selectedProgramSlot = 0;
-const PROGRAM_SLOTS = [ {id:PROGRAM.id, name:PROGRAM.name}, {id:JR_PROGRAM.id, name:JR_PROGRAM.name}, null, null, null ];
+const PROGRAM_SLOTS = [ {id:PROGRAM.id, name:PROGRAM.name}, {id:JR_PROGRAM.id, name:JR_PROGRAM.name},
+                        {id:FLEX_PROGRAM.id, name:FLEX_PROGRAM.name}, null, null ];
 function trunc20(s){ return s.length>20 ? s.slice(0,19)+"…" : s; }
 function activeIdx(){
   const d = doneCount();
@@ -1667,12 +1814,15 @@ const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","De
 function pretty(s){ const d=parseYmd(s); return DOW[d.getDay()]+" "+d.getDate()+" "+MON[d.getMonth()]; }
 
 // Mon/Wed/Fri slots from start date.
-function slots(n){
-  const out=[]; const d=parseYmd(PS().startDate);
+// Optional days/startDate so a second program can schedule itself. Called with
+// neither, this is the finger block's original Mon/Wed/Fri behaviour unchanged —
+// PROGRAM.days was declared but never read until now.
+function slots(n, days, startDate){
+  days = days || PROGRAM.days;
+  const out=[]; const d=parseYmd(startDate || PS().startDate);
   let guard=0;
   while(out.length<n && guard++<800){
-    const w=d.getDay();
-    if(w===1||w===3||w===5) out.push(ymd(d));
+    if(days.indexOf(d.getDay())>=0) out.push(ymd(d));
     d.setDate(d.getDate()+1);
   }
   return out;
@@ -2529,8 +2679,333 @@ function renderJumpRopeProgram(){
   return h;
 }
 
+
+/* ==================== Climbing Flexibility: rendering ====================
+   Assembled from components already in this file — .card / .card-head / .row1 /
+   .grade / .eyebrow / .cue / .specs / .rule / .past-log / .chk / .locked-note /
+   .btn / accSec — so it inherits the app's look with no new styling of its own.
+   ======================================================================== */
+let FLEX_RESULT = null;   // set when a session ends; cleared once logged or discarded
+
+function flexNextDate(){
+  const done = {};
+  flexLogs().forEach(e => { done[e.date] = true; });
+  const list = slots(60, FLEX_PROGRAM.days, FS().startDate);
+  const today = todayYmd();
+  for(const d of list){ if(!done[d] && d >= today) return d; }
+  for(const d of list){ if(!done[d]) return d; }
+  return list[0];
+}
+
+function renderFlexSessionBody(sesId, week){
+  const built = flexSeq(sesId, week);
+  const stage = built.stage, session = built.session;
+  let h = '<div class="rule"><div class="rule-k">Week ' + week + ' of ' + FLEX_CYCLE_WEEKS
+    + ' · ' + esc(stage.label) + '</div><div class="rule-v">'
+    + (stage.addSec ? "Every timed hold is " + stage.addSec + "s longer this block. " : "")
+    + (stage.thirdSetFor.length ? "Exercises 1 and 2 get a third set this block. " : "")
+    + 'About ' + Math.round(built.total/60) + ' minutes including transitions.</div></div>';
+  session.exercises.forEach((e, i) => {
+    const sets = e.sets + (stage.thirdSetFor.indexOf(i) >= 0 ? 1 : 0);
+    const amount = e.kind === "time" ? (e.sec + stage.addSec) + "s" : e.reps + " reps";
+    const per = e.variants.length > 1 ? " · " + e.variants.join(" / ") : "";
+    h += '<div class="rule"><div class="rule-k">' + (i+1) + '. ' + esc(e.name) + '</div>'
+      +  '<div class="rule-v">' + sets + (sets===1 ? ' set × ' : ' sets × ') + amount + esc(per)
+      +  (e.cue ? '<br><span style="color:var(--dim)">' + esc(e.cue) + '</span>' : '')
+      +  '</div></div>';
+  });
+  return h;
+}
+
+function renderFlexHistoryBody(){
+  const logs = flexLogs();
+  if(!logs.length) return '<div class="empty">Nothing logged yet.</div>';
+  let h = '';
+  logs.forEach(e => {
+    const ses = FLEX_SESSIONS[e.sessionType];
+    const bits = [ses ? ses.label : e.sessionType];
+    if(e.week) bits.push("week " + e.week);
+    if(e.durationSec != null) bits.push(Math.round(e.durationSec/60) + " min");
+    if(e.completedExercises) bits.push(e.completedExercises.length + " of " + e.totalExercises + " done");
+    if(e.rpe != null) bits.push("RPE " + e.rpe);
+    h += '<div class="past-log"><div class="k">' + pretty(e.date) + '</div>'
+      +  '<div class="v">' + esc(bits.join(" · ")) + '</div>'
+      +  (e.notes ? '<div class="note">' + esc(e.notes) + '</div>' : '') + '</div>';
+  });
+  return h;
+}
+
+function renderFlexProgram(){
+  const logs = flexLogs();
+  const nextDate = flexNextDate();
+  const ses = flexSessionForDate(nextDate) || FLEX_SESSIONS.lower;
+  const week = flexWeekOn(nextDate);
+  const built = flexSeq(ses.id, week);
+
+  // a finished session waiting to be logged takes over the screen
+  if(FLEX_RESULT){
+    const r = FLEX_RESULT, rs = FLEX_SESSIONS[r.sessionType];
+    let h = '<div class="card"><div class="card-head">'
+      +   '<div class="row1"><h2>' + esc(rs.label) + ' — done</h2>'
+      +   '<span class="grade">W' + r.week + '</span></div>'
+      +   '<div class="eyebrow">' + pretty(r.date) + ' · ' + mmss(r.durationSec*1000)
+      +     ' · ' + (r.finished ? "completed" : "ended early") + '</div></div>'
+      + '<div class="fields">'
+      +   '<div class="fld"><label>Exercises completed</label>';
+    rs.exercises.forEach((e, i) => {
+      const on = r.completedIdx.indexOf(i) >= 0;
+      h += '<label class="chk"><input type="checkbox" class="flexdone" data-i="' + i + '"'
+        +  (on ? " checked" : "") + '> ' + esc(e.name) + '</label>';
+    });
+    h += '</div>'
+      +   '<div class="fld"><label>How it felt (RPE 1–10)</label>'
+      +     '<input type="number" step="any" min="1" max="10" id="flex_rpe"></div>'
+      +   '<div class="fld"><label>Notes</label><textarea id="flex_notes" '
+      +     'placeholder="What felt tight, what moved better than last time"></textarea></div>'
+      + '</div>'
+      + '<div class="actions"><button class="btn primary" id="flex-save">Save log</button>'
+      + '<button class="btn skip" id="flex-discard">Discard</button></div></div>';
+    return h;
+  }
+
+  let h = '<div class="card"><div class="card-head">'
+    +   '<div class="row1"><h2>' + esc(ses.label) + '</h2>'
+    +   '<span class="grade" title="Week ' + week + ' of the 8-week cycle">W' + week + '</span></div>'
+    +   '<div class="eyebrow">' + pretty(nextDate) + ' · ' + esc(ses.dayLabel)
+    +     ' · ' + esc(built.stage.label) + '</div>'
+    +   '<div class="specs">'
+    +     '<div><div class="k">Session</div><div class="v">' + esc(ses.label) + '</div></div>'
+    +     '<div><div class="k">Duration</div><div class="v">' + Math.round(built.total/60)
+    +       ' <small>min</small></div></div>'
+    +     '<div><div class="k">Cycle week</div><div class="v">' + week + ' <small>of 8</small></div></div>'
+    +   '</div>'
+    +   '<div class="cue">Tuesday and Thursday are lower body, Sunday is upper. The 8-week '
+    +     'cycle repeats — after week 8 it starts again at week 1.</div>'
+    + '</div>'
+    + '<div class="actions"><button class="btn primary" id="flex-start">Start '
+    +   esc(ses.label.toLowerCase()) + '</button>'
+    + '<button class="btn skip" id="flex-other">Do the other one</button></div></div>';
+
+  h += '<div class="locked-note" style="margin-bottom:var(--s3)"><b>Not physiotherapy advice.</b> '
+    + 'This is general training guidance, not an assessment of you. Pain, pinching, or a joint '
+    + 'that feels unstable means stop and get it looked at by a physio or doctor, rather than '
+    + 'working through it.</div>';
+
+  h += accSec("flex:lower", "Lower body session", "Tue · Thu",
+              () => renderFlexSessionBody("lower", week));
+  h += accSec("flex:upper", "Upper body session", "Sun",
+              () => renderFlexSessionBody("upper", week));
+  h += accSec("flex:cycle", "The 8-week cycle", "repeats", () => {
+    let r = '';
+    FLEX_PROGRESSION.forEach(p => {
+      const ws = p.weeks.length > 1
+        ? "Weeks " + p.weeks[0] + "–" + p.weeks[p.weeks.length-1]
+        : "Week " + p.weeks[0];
+      r += '<div class="rule"><div class="rule-k">' + ws
+        +  (p.weeks.indexOf(week) >= 0 ? ' · now' : '') + '</div>'
+        +  '<div class="rule-v">' + esc(p.label) + ' — '
+        +  (p.addSec ? "every timed hold +" + p.addSec + "s, " : "base hold durations, ")
+        +  (p.thirdSetFor.length ? "three sets on exercises 1 and 2" : "two sets")
+        +  '.</div></div>';
+    });
+    r += '<div class="rule"><div class="rule-k">Then</div><div class="rule-v">Back to week 1. '
+      +  'The cycle repeats indefinitely — there is no end date.</div></div>';
+    return r;
+  });
+  h += accSec("flex:setup", "Start date", pretty(FS().startDate), () =>
+      '<div class="fld"><label>Cycle start — sets which week you are on</label>'
+    + '<input type="date" id="flex_start" value="' + FS().startDate + '"></div>'
+    + '<div class="cue" style="border:0">Week ' + week + ' right now. Changing this only moves '
+    + 'where you are in the cycle; nothing already logged is affected.</div>');
+  h += accSec("flex:history", "History", logs.length + " logged", renderFlexHistoryBody);
+  return h;
+}
+
+/* ==================== Climbing Flexibility: the timer ====================
+   Runs on the shared timeline core, same as the jump-rope clock. The one new
+   idea is the rep segment: it has no meaningful countdown, so it counts UP and
+   ends on a Done tap, which feeds seqSkip() — the identical mechanism the skip
+   button already used. If it is never tapped the nominal time elapses and the
+   sequence moves on by itself, so it can never hang.
+   ======================================================================= */
+let FT = null, flexInterval = null;
+
+function flexStartSession(sesId){
+  audio();                    // unlock on this tap — iOS blocks audio until a gesture
+  const date = flexNextDate();
+  const week = flexWeekOn(date);
+  const built = flexSeq(sesId, week);
+  FT = seqState();
+  FT.seq = built.seq; FT.total = built.total; FT.sesId = sesId;
+  FT.week = week; FT.date = date; FT.doneIdx = {};
+  FT.repDone = {}; FT.waitingReps = false;
+  document.body.classList.add("timing");
+  $("fxover").classList.add("up");
+  wakeOn();
+  if(!flexInterval) flexInterval = setInterval(flexTick, 200);
+  flexPaint();
+  CUE.go();
+}
+function flexCurrent(){
+  if(!FT) return null;
+  return seqAt(FT.seq, seqElapsedMs(FT)/1000);
+}
+function flexPaint(){
+  if(!FT) return;
+  const el = seqElapsedMs(FT)/1000;
+  const hit = seqAt(FT.seq, el);
+  if(!hit) return;
+  const iv = hit.iv;
+  const isTrans = iv.kind === "transition";
+  const isReps  = iv.kind === "reps";
+  const over = $("fxover");
+
+  over.classList.toggle("brk", isTrans);
+  over.classList.toggle("closing", !isReps && hit.left <= 3);
+
+  const ses = FLEX_SESSIONS[FT.sesId];
+  $("fx-tsession").textContent = ses.label + " · week " + FT.week;
+  $("fx-telapsed").textContent = "Elapsed " + jrClock(el*1000) + " / " + jrClock(FT.total*1000);
+
+  if(isTrans){
+    const nx = iv.next;
+    $("fx-tset").textContent = "Next up";
+    $("fx-tphase").textContent = nx.name + (nx.variant ? " · " + nx.variant : "");
+    $("fx-tnum").textContent = Math.ceil(hit.left);
+    $("fx-cue").textContent = nx.kind === "reps" ? nx.reps + " reps" : nx.sec + "s hold";
+  } else {
+    $("fx-tset").textContent = "Set " + iv.set + " of " + iv.sets
+      + (iv.variant ? " · " + iv.variant : "");
+    $("fx-tphase").textContent = iv.name;
+    $("fx-tnum").textContent = isReps ? Math.floor(el - iv.from) : Math.ceil(hit.left);
+    $("fx-cue").textContent = isReps
+      ? (FT.waitingReps !== false ? "Waiting for you — tap Done when the set is finished"
+                                  : iv.reps + " reps — tap Done when finished")
+      : (iv.cue || "");
+  }
+  $("fx-done").style.display = isReps ? "" : "none";
+  $("fx-skip").style.display = isReps ? "none" : "";
+  // while a rep set is holding the clock, Pause would only be confusing
+  $("fx-pause").style.display = (FT.waitingReps !== false) ? "none" : "";
+  $("fx-pause").textContent = FT.pauseStartedAt ? "Resume" : "Pause";
+  $("fx-tfill").style.width = Math.min(100, (el/FT.total)*100) + "%";
+}
+function flexTick(){
+  if(!FT) return;
+  if(FT.pauseStartedAt){ flexPaint(); return; }
+  let el = seqElapsedMs(FT)/1000;
+
+  // A rep set ends when you say it does, not when its nominal time runs out.
+  // This is a scan rather than a check on the current segment on purpose: the
+  // clock can jump by minutes if the screen locks mid-set, which would skip
+  // straight past a narrow "about to expire" window. Rewind to the end of the
+  // first unfinished rep set and hold there until Done is tapped.
+  if(FT.waitingReps === false){
+    for(let i = 0; i < FT.seq.length; i++){
+      const sg = FT.seq[i];
+      if(sg.kind === "reps" && !FT.repDone[i] && el >= sg.to - 0.05){
+        FT.skipMs -= (el - (sg.to - 0.05)) * 1000;
+        FT.waitingReps = i;
+        seqTogglePause(FT);
+        CUE.rest();
+        flexPaint();
+        return;
+      }
+    }
+    el = seqElapsedMs(FT)/1000;
+  }
+
+  if(el >= FT.total){ flexFinish(true); return; }
+  const hit = seqAt(FT.seq, el);
+  if(hit){
+    const iv = hit.iv;
+    if(iv.kind !== "reps"){
+      const secs = Math.ceil(hit.left);
+      if(secs <= 3 && secs > 0 && secs !== FT.lastBeepSec){
+        FT.lastBeepSec = secs; CUE.tick(secs % 2 === 1);
+      }
+    } else {
+      FT.lastBeepSec = -1;
+    }
+    if(iv.exIdx != null) FT.doneIdx[iv.exIdx] = true;   // reached it, so count it attempted
+  }
+  flexPaint();
+}
+function flexDoneTap(){
+  const hit = flexCurrent(); if(!hit || hit.iv.kind !== "reps") return;
+  if(hit.iv.exIdx != null) FT.doneIdx[hit.iv.exIdx] = true;
+  FT.repDone[hit.iv.si] = true;
+  if(FT.waitingReps !== false){ FT.waitingReps = false; seqTogglePause(FT); }  // release the hold
+  seqSkip(FT, hit.left);
+  CUE.rest();
+  flexPaint();
+}
+function flexSkipTap(){
+  const hit = flexCurrent(); if(!hit) return;
+  if(hit.iv.kind === "reps") FT.repDone[hit.iv.si] = true;
+  seqSkip(FT, hit.left);
+  CUE.rest();
+  flexPaint();
+}
+function flexFinish(finished){
+  if(!FT) return;
+  clearInterval(flexInterval); flexInterval = null;
+  const el = Math.min(FT.total, seqElapsedMs(FT)/1000);
+  FLEX_RESULT = {
+    date: FT.date, sessionType: FT.sesId, week: FT.week,
+    durationSec: Math.round(el), finished: !!finished,
+    completedIdx: Object.keys(FT.doneIdx).map(Number).sort((a,b) => a-b)
+  };
+  FT = null;
+  document.body.classList.remove("timing");
+  $("fxover").classList.remove("up", "brk", "closing");
+  wakeOff();
+  CUE.done();
+  render();
+  toast(finished ? "Session complete — log it" : "Ended early — log it");
+}
+function wireFlexTimer(){
+  const p = $("fx-pause"); if(p) p.onclick = () => { if(FT){ seqTogglePause(FT); flexPaint(); } };
+  const d = $("fx-done");  if(d) d.onclick = flexDoneTap;
+  const k = $("fx-skip");  if(k) k.onclick = flexSkipTap;
+  const e = $("fx-stop");  if(e) e.onclick = () => { if(FT) flexFinish(false); };
+}
+function wireFlex(){
+  const st = $("flex-start");
+  if(st) st.onclick = () => {
+    const ses = flexSessionForDate(flexNextDate()) || FLEX_SESSIONS.lower;
+    flexStartSession(ses.id);
+  };
+  const ot = $("flex-other");
+  if(ot) ot.onclick = () => {
+    const cur = flexSessionForDate(flexNextDate()) || FLEX_SESSIONS.lower;
+    flexStartSession(cur.id === "lower" ? "upper" : "lower");
+  };
+  const sd = $("flex_start");
+  if(sd) sd.onchange = () => { FS().startDate = sd.value || FS().startDate; save(); render(); };
+  const sv = $("flex-save");
+  if(sv) sv.onclick = () => {
+    const r = FLEX_RESULT; if(!r) return;
+    const ses = FLEX_SESSIONS[r.sessionType];
+    const picked = [...document.querySelectorAll("#fb .flexdone")]
+      .filter(c => c.checked).map(c => ses.exercises[+c.dataset.i].name);
+    S.log = S.log || [];
+    S.log.push({date:r.date, program:FLEX_ID, status:"done",
+      sessionType:r.sessionType, week:r.week,
+      durationSec:r.durationSec, durationMinutes:Math.round(r.durationSec/60),
+      finished:r.finished,
+      completedExercises:picked, totalExercises:ses.exercises.length,
+      rpe:num("flex_rpe"), notes:($("flex_notes") && $("flex_notes").value.trim()) || ""});
+    S.log.sort((a,b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+    FLEX_RESULT = null;
+    save(); render(); toast("Logged");
+  };
+  const dc = $("flex-discard");
+  if(dc) dc.onclick = () => { FLEX_RESULT = null; render(); };
+}
 function renderPrograms(){
   if(selectedProgramSlot===1) return renderJumpRopeProgram();
+  if(selectedProgramSlot===2) return renderFlexProgram();
 
   const usedSlots = PROGRAM_SLOTS.filter(Boolean).length;
   if(usedSlots===0){
@@ -2808,6 +3283,34 @@ function wireTimer(){
   $("t-stop").onclick  = ()=>{ stopTimer(); };
 }
 
+/* ==================== shared timeline core ====================
+   Both interval clocks in this app run on these four functions. Elapsed time is
+   always recomputed from a stored start timestamp against Date.now(), never
+   accumulated from setInterval ticks, so a clock cannot drift over a long
+   session or stall while the screen is backgrounded. Pausing and skipping
+   adjust that formula rather than touching a countdown directly.
+
+   A sequence is a flat array of segments each carrying cumulative `from`/`to`
+   offsets in seconds, so "what is playing right now" is one lookup.
+   ============================================================= */
+function seqState(){ return {startedAt:Date.now(), pausedMs:0, pauseStartedAt:null, skipMs:0, lastBeepSec:-1}; }
+function seqElapsedMs(st){
+  if(!st) return 0;
+  const pausedNow = st.pauseStartedAt ? (Date.now()-st.pauseStartedAt) : 0;
+  return (Date.now() - st.startedAt) - st.pausedMs - pausedNow + st.skipMs;
+}
+function seqAt(seq, elapsedSec){
+  const iv = seq.find(x=> elapsedSec>=x.from && elapsedSec<x.to);
+  return iv ? {iv, left: Math.max(0, iv.to - elapsedSec)} : null;
+}
+function seqTogglePause(st){
+  if(!st) return;
+  if(st.pauseStartedAt){ st.pausedMs += Date.now() - st.pauseStartedAt; st.pauseStartedAt = null; }
+  else st.pauseStartedAt = Date.now();
+}
+// jump the clock forward past whatever is left of the current segment
+function seqSkip(st, leftSec){ if(st) st.skipMs += Math.max(0, leftSec) * 1000; }
+
 /* ============================== jump rope timer ==============================
    Independent of T above — its own overlay (#jrover), its own state. Runs for
    up to 30 real minutes, so it's built to survive backgrounding without
@@ -2825,15 +3328,13 @@ function jrClock(ms){
   const s = Math.max(0, Math.round(ms/1000));
   return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
 }
-function jrElapsedMs(){
-  if(!JT) return 0;
-  const pausedNow = JT.pauseStartedAt ? (Date.now()-JT.pauseStartedAt) : 0;
-  return (Date.now() - JT.startedAt) - JT.pausedMs - pausedNow + JT.skipMs;
-}
+function jrElapsedMs(){ return seqElapsedMs(JT); }
 function jrPhaseAt(elapsedSec){
   if(elapsedSec < JR_FIXED_SEC){
-    const iv = JR_SEQ.find(x=> elapsedSec>=x.from && elapsedSec<x.to) || JR_SEQ[JR_SEQ.length-1];
-    return {free:false, iv, left: Math.max(0, iv.to-elapsedSec)};
+    const hit = seqAt(JR_SEQ, elapsedSec);
+    if(hit) return {free:false, iv:hit.iv, left:hit.left};
+    const last = JR_SEQ[JR_SEQ.length-1];
+    return {free:false, iv:last, left:0};
   }
   return {free:true};
 }
@@ -2888,7 +3389,7 @@ function jrTick(){
 }
 function jrStart(){
   audio();   // unlock AudioContext on this tap — iOS Safari blocks it until a user gesture
-  JT = {startedAt:Date.now(), pausedMs:0, pauseStartedAt:null, skipMs:0, lastBeepSec:-1};
+  JT = seqState();
   document.body.classList.add("timing");
   $("jrover").classList.add("up");
   wakeOn();
@@ -2896,22 +3397,13 @@ function jrStart(){
   jrPaint(0, jrPhaseAt(0));
   CUE.go();
 }
-function jrPause(){
-  if(!JT) return;
-  if(JT.pauseStartedAt){
-    JT.pausedMs += Date.now()-JT.pauseStartedAt;
-    JT.pauseStartedAt = null;
-  } else {
-    JT.pauseStartedAt = Date.now();
-  }
-  jrPaint();
-}
+function jrPause(){ if(!JT) return; seqTogglePause(JT); jrPaint(); }
 function jrSkip(){
   if(!JT) return;
   const elapsedSec = jrElapsedMs()/1000;
   if(elapsedSec >= JR_FIXED_SEC) return;   // nothing left to skip to during free jump
   const ph = jrPhaseAt(elapsedSec);
-  JT.skipMs += Math.max(0, ph.left)*1000;
+  seqSkip(JT, ph.left);
   CUE.rest();
   jrPaint();
 }
@@ -3722,6 +4214,7 @@ function render(){
   if(tab==="settings") wireBackup();
   if(tab==="programs") wireProgSwitch();
   if(tab==="programs" && selectedProgramSlot===1) wireJumpRope();
+  if(tab==="programs" && selectedProgramSlot===2) wireFlex();
   wire();
 }
 
@@ -3900,6 +4393,7 @@ function wireProgSwitch(){
   wireTimer();
   wireJrTimer();
   wireHoldTimer();
+  wireFlexTimer();
   render();
 })();
 

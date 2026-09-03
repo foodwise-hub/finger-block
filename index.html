@@ -1069,6 +1069,51 @@ function dropEntry(date){
 }
 function draftKey(date){ return CUR+"|"+date; }
 
+/* Undoing a logged session. Deleting the log entry alone is not enough: a test
+   session also wrote records into S.tests, and those drive S.maxes and every
+   prescription derived from it. Test results carry no link back to the session
+   that produced them (DATA-MODEL.md specifies session_log_id on Test result; it
+   was never implemented), so they are matched on program + date — which is also
+   the only way to match the records already stored.
+
+   Restricted to the most recently logged session on purpose. Sessions are
+   assigned to positions in date order, so removing one from the middle would
+   silently renumber every session after it — rewriting history rather than
+   rolling it back. Undo from the newest backwards instead. */
+function undoTargets(date){
+  return {
+    entry: EN()[date] || null,
+    tests: (S.tests||[]).filter(t=>t.program===CUR && t.date===date),
+    draft: !!S.drafts[draftKey(date)]
+  };
+}
+function undoSession(date){
+  const t = undoTargets(date);
+  if(!t.entry){ toast("Nothing logged on that day"); return; }
+
+  const what = ["the " + pretty(date) + " session"];
+  if(t.tests.length){
+    const names = t.tests.map(x=>toolOf(x.tool).label + (x.hand==="both" ? "" : " " + x.hand));
+    what.push(t.tests.length + " test result" + (t.tests.length===1?"":"s")
+              + " recorded that day (" + names.join(", ") + ")");
+  }
+  const msg = "Delete " + what.join(" and ") + "?\n\n"
+    + (t.tests.length
+        ? "Your maxes will be recalculated from the tests that remain, and every future prescription with them.\n\n"
+        : "")
+    + "The program rolls back to where it was before this session. This cannot be undone.";
+  if(!confirm(msg)) return;
+
+  dropEntry(date);
+  if(t.tests.length) S.tests = (S.tests||[]).filter(x=>!(x.program===CUR && x.date===date));
+  delete S.drafts[draftKey(date)];
+  if(PS().lastSkip === date) PS().lastSkip = null;
+  S.snap = null;              // the unit-conversion snapshot no longer matches
+  refreshMaxes();             // maxes are a cache over S.tests — re-derive them
+  save(); render();
+  toast("Session removed");
+}
+
 /* ---- tests ---- */
 const TOOLS = [
   {id:"block20", label:"Block 20mm", hands:["L","R"], protocol:"7s half crimp"},
@@ -1832,20 +1877,38 @@ function slots(n, days, startDate){
 function doneCount(){
   return Object.values(EN()).filter(e=>e.status==="done" && e.advances!==false).length;
 }
+/* Sessions are a sequence, not a calendar. Future dates continue from the last
+   session actually logged, never from the program start date: doing one late
+   pushes the rest back, it never compresses to catch up and it never back-fills
+   a slot you walked past.
+
+   Anchoring on the start date is what this used to do, and it could schedule the
+   next session BEFORE one already completed — the abandoned grid dates stayed
+   "free" and got handed out first. Past dates are untouched either way; they
+   come from each log entry's own stored date. */
+function lastEntryDate(){
+  const ds = Object.keys(EN()).sort();          // done or missed — both consume a date
+  return ds.length ? ds[ds.length-1] : null;
+}
+function futureSlots(n){
+  const last = lastEntryDate();
+  if(!last) return slots(n).filter(d=>!EN()[d]);      // nothing logged yet: start date it is
+  const from = parseYmd(last);
+  from.setDate(from.getDate() + 1);                   // strictly after the last one
+  return slots(n, null, ymd(from)).filter(d=>!EN()[d]);
+}
 function nextSlot(){
-  const list = slots(120);
-  const en = EN();
-  for(const s of list){ if(!en[s]) return s; }
-  return list[list.length-1];
+  const list = futureSlots(120);
+  return list.length ? list[0] : slots(120).slice(-1)[0];
 }
 function lastDoneDate(){
   const ds = Object.keys(EN()).filter(d=>EN()[d].status==="done").sort();
   return ds.length ? ds[ds.length-1] : null;
 }
+// Overdue now means one real thing: the next session's date has passed.
 function overdueSlots(){
-  const t = todayYmd();
-  const en = EN();
-  return slots(120).filter(s=>!en[s] && daysBetween(s,t)>0);
+  const nx = nextSlot();
+  return (nx && daysBetween(nx, todayYmd()) > 0) ? [nx] : [];
 }
 
 // What to show for the next unlogged slot, plus any regression applied.
@@ -2546,6 +2609,7 @@ function renderDayBody(idx){
   if(e.loads && (e.loads.L!=null || e.loads.R!=null))
     bits.push('L '+fmt(e.loads.L)+' / R '+fmt(e.loads.R)+' '+unit());
   if(e.rpe!=null) bits.push('RPE '+e.rpe);
+  const isLatest = sc.date && sc.date === lastEntryDate();
   return '<div class="card"><div class="card-head">'
     +     '<div class="row1"><h2>'+def.name+'</h2></div>'
     +     specLine(def)
@@ -2555,7 +2619,14 @@ function renderDayBody(idx){
     +     '<div class="k">Logged '+(sc.date?pretty(sc.date):"")+'</div>'
     +     (bits.length ? '<div class="v">'+bits.join(' · ')+'</div>' : '')
     +     (e.notes ? '<div class="note">'+esc(e.notes)+'</div>' : '')
-    +   '</div></div></div>';
+    +   '</div></div>'
+    +   (isLatest
+        ? '<div class="actions"><span></span>'
+          + '<button class="btn skip" data-undo="'+sc.date+'">Undo this session</button></div>'
+        : '<div class="fields"><div class="cue" style="border:0;padding:0">Only the most recently '
+          + 'logged session can be undone — otherwise every session after it would be renumbered. '
+          + 'Work backwards from the newest one.</div></div>')
+    + '</div>';
 }
 
 function renderProgramsBody(){
@@ -3603,7 +3674,7 @@ function sessionSchedule(){
       i++;
     }
   });
-  const free = slots(200).filter(d=>!EN()[d]);
+  const free = futureSlots(200);
   let k = 0;
   for(let j=i;j<out.length;j++){
     out[j] = {date: free[k++]||null, status:(j===i ? "current" : "upcoming")};
@@ -3845,6 +3916,10 @@ function renderToday(){
           <div class="fld"><label>Load used — L (${unit()})</label><input type="number" step="any" id="f_useL"></div>
           <div class="fld"><label>Load used — R (${unit()})</label><input type="number" step="any" id="f_useR"></div>
         </div>` : "")
+    +     '<div class="fld"><label>Date trained</label>'
+    +       '<input type="date" id="f_date" value="'+todayYmd()+'">'
+    +       '<div class="cue" style="border:0;padding:6px 0 0">Defaults to today. Change it if you are '
+    +         'logging a session you did on another day — every later date follows from this one.</div></div>'
     +     '<div class="fld"><label>How it felt (RPE 1–10)</label><input type="number" step="any" min="1" max="10" id="f_rpe"></div>'
     +     '<div class="fld"><label>Notes — skin, tweaks, how the bouldering went after</label><textarea id="f_notes" placeholder="The last part is the real read on whether the dose is right."></textarea></div>'
     +   '</div>'
@@ -4101,12 +4176,12 @@ function backupSection(){
 }
 function wireBackup(){
   const undo = $("f-undo"); if(!undo) return;
+  // Same path as the button on the session itself, so there is one correct undo
+  // rather than two that behave differently.
   undo.onclick = ()=>{
-    const ds = Object.keys(EN()).sort();
-    if(!ds.length) return toast("Nothing to undo");
-    const last = ds[ds.length-1];
-    dropEntry(last);
-    save(); render(); toast("Removed "+pretty(last));
+    const last = lastEntryDate();
+    if(!last) return toast("Nothing to undo");
+    undoSession(last);
   };
   $("f-export").onclick = ()=>{
     const blob = new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
@@ -4239,6 +4314,9 @@ function wire(){
       save(); paintStack();
     };
   });
+  document.querySelectorAll("#fb [data-undo]").forEach(b=>{
+    b.onclick = ()=> undoSession(b.dataset.undo);
+  });
   const bu = $("btn-undo-skip");
   if(bu) bu.onclick = ()=>{
     const d = PS().lastSkip;
@@ -4266,6 +4344,12 @@ function wire(){
   if(done) done.onclick = ()=>{
     const pl = currentPlan();
     const def = pl.def;
+    // The date you actually trained, not the date the session was planned for.
+    // Every future session is scheduled from this, so it has to be the truth.
+    const when = ($("f_date") && $("f_date").value) || pl.date;
+    if(when !== pl.date && EN()[when] &&
+       !confirm("There is already a session logged on " + pretty(when)
+                + ". Logging this replaces it. Continue?")) return;
     const e = {status:"done", idx:pl.idx, advances:pl.advances, name:def.name,
                rpe:num("f_rpe"), notes:($("f_notes")&&$("f_notes").value.trim())||""};
 
@@ -4293,12 +4377,12 @@ function wire(){
     // each test result is its own dated record — bodyweight and protocol travel
     // with it, because a load means nothing without them six months later
     const tbw = S.bodyweight;
-    if(b20L!=null) addTest({tool:"block20", hand:"L", load:b20L, bw:tbw, protocol:"7s half crimp", date:pl.date});
-    if(b20R!=null) addTest({tool:"block20", hand:"R", load:b20R, bw:tbw, protocol:"7s half crimp", date:pl.date});
-    if(b10L!=null) addTest({tool:"block10", hand:"L", load:b10L, bw:tbw, protocol:"7s half crimp", date:pl.date});
-    if(b10R!=null) addTest({tool:"block10", hand:"R", load:b10R, bw:tbw, protocol:"7s half crimp", date:pl.date});
+    if(b20L!=null) addTest({tool:"block20", hand:"L", load:b20L, bw:tbw, protocol:"7s half crimp", date:when});
+    if(b20R!=null) addTest({tool:"block20", hand:"R", load:b20R, bw:tbw, protocol:"7s half crimp", date:when});
+    if(b10L!=null) addTest({tool:"block10", hand:"L", load:b10L, bw:tbw, protocol:"7s half crimp", date:when});
+    if(b10R!=null) addTest({tool:"block10", hand:"R", load:b10R, bw:tbw, protocol:"7s half crimp", date:when});
     if(added!=null && tbw!=null)
-      addTest({tool:"hang", hand:"both", load:tbw+added, added, bw:tbw, protocol:"10s half crimp", date:pl.date});
+      addTest({tool:"hang", hand:"both", load:tbw+added, added, bw:tbw, protocol:"10s half crimp", date:when});
 
     if((def.kind==="test20"||def.kind==="test10"||def.kind==="testhang") &&
         b20L==null && b10L==null && added==null){
@@ -4306,9 +4390,10 @@ function wire(){
     }
 
     S.snap = null;
-    putEntry(pl.date, e);
+    putEntry(when, e);
     PS().lastSkip = null;
     delete S.drafts[draftKey(pl.date)];
+    if(when !== pl.date) delete S.drafts[draftKey(when)];
     stopTimer();
     save(); render(); toast("Logged");
   };
